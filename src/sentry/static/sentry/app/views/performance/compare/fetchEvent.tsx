@@ -49,10 +49,39 @@ class FetchEvent extends React.Component<Props, State> {
     // note: eventSlug is of the form <project-slug>:<event-id>
 
     const url = `/organizations/${orgSlug}/events/${eventSlug}/`;
+    const tableFetchID = Symbol('tableFetchID');
+
+    this.setState({isLoading: true, tableFetchID});
+
+    this.props.api
+      .requestPromise(url, {
+        method: 'GET',
+      })
+      .then(data => {
+        if (this.state.tableFetchID !== tableFetchID) {
+          // invariant: a different request was initiated after this request
+          return;
+        }
+
+        this.setState({
+          isLoading: false,
+          tableFetchID: undefined,
+          error: null,
+          event: data,
+        });
+      })
+      .catch(err => {
+        this.setState({
+          isLoading: false,
+          tableFetchID: undefined,
+          error: err?.responseJSON?.detail ?? null,
+          event: undefined,
+        });
+      });
   }
 
   render() {
-    return <div>FetchEvent</div>;
+    return <div>{JSON.stringify(this.state.event, null, 1)}</div>;
   }
 }
 
