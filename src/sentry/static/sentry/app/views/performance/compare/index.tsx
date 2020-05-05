@@ -2,11 +2,15 @@ import React from 'react';
 import {Params} from 'react-router/lib/Router';
 import {Location} from 'history';
 
+import withOrganization from 'app/utils/withOrganization';
+import {Organization} from 'app/types';
+
 import FetchEvent from './fetchEvent';
 
 type Props = {
   location: Location;
   params: Partial<Params>;
+  organization: Organization;
 };
 
 class CompareContainer extends React.PureComponent<Props> {
@@ -29,7 +33,9 @@ class CompareContainer extends React.PureComponent<Props> {
       return null;
     }
 
-    return <FetchEvent eventSlug={eventSlug} />;
+    const {organization} = this.props;
+
+    return <FetchEvent orgSlug={organization.slug} eventSlug={eventSlug} />;
   }
 
   render() {
@@ -46,4 +52,4 @@ class CompareContainer extends React.PureComponent<Props> {
   }
 }
 
-export default CompareContainer;
+export default withOrganization(CompareContainer);
