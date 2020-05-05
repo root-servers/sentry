@@ -13,7 +13,7 @@ type Props = {
   organization: Organization;
 };
 
-class CompareContainer extends React.PureComponent<Props> {
+class TransactionComparison extends React.PureComponent<Props> {
   getEventSlugs() {
     let {baselineEventSlug, regressionEventSlug} = this.props.params;
 
@@ -52,4 +52,4 @@ class CompareContainer extends React.PureComponent<Props> {
   }
 }
 
-export default withOrganization(CompareContainer);
+export default withOrganization(TransactionComparison);
