@@ -4,7 +4,7 @@ import {Client} from 'app/api';
 import withApi from 'app/utils/withApi';
 import {Event} from 'app/types';
 
-type ChildrenProps = {
+export type ChildrenProps = {
   isLoading: boolean;
   error: null | string;
   event: Event | undefined;
