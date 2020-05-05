@@ -15,6 +15,8 @@ type Props = {
 
   orgSlug: string;
   eventSlug: string;
+
+  children: (props: ChildrenProps) => React.ReactNode;
 };
 
 type State = {
@@ -81,7 +83,15 @@ class FetchEvent extends React.Component<Props, State> {
   }
 
   render() {
-    return <div>{JSON.stringify(this.state.event, null, 1)}</div>;
+    const {isLoading, error, event} = this.state;
+
+    const childrenProps: ChildrenProps = {
+      isLoading,
+      error,
+      event,
+    };
+
+    return this.props.children(childrenProps);
   }
 }
 
