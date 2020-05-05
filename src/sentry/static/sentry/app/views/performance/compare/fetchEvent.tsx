@@ -5,6 +5,8 @@ import withApi from 'app/utils/withApi';
 
 type Props = {
   api: Client;
+
+  eventSlug: string;
 };
 
 class FetchEvent extends React.Component<Props> {
