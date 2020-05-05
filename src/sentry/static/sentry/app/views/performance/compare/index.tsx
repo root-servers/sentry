@@ -9,7 +9,7 @@ type Props = {
   params: Params;
 };
 
-class CompareContainer extends React.Component<Props> {
+class CompareContainer extends React.PureComponent<Props> {
   render() {
     console.log('props', this.props);
     return (
