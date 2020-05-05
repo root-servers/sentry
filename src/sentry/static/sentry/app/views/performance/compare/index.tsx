@@ -3,9 +3,9 @@ import {Params} from 'react-router/lib/Router';
 import {Location} from 'history';
 
 import withOrganization from 'app/utils/withOrganization';
-import {Organization} from 'app/types';
+import {Organization, Event} from 'app/types';
 
-import FetchEvent from './fetchEvent';
+import FetchEvent, {ChildrenProps} from './fetchEvent';
 
 type Props = {
   location: Location;
@@ -28,25 +28,57 @@ class TransactionComparison extends React.PureComponent<Props> {
     };
   }
 
-  fetchEvent(eventSlug: string | undefined) {
+  fetchEvent(
+    eventSlug: string | undefined,
+    renderFunc: (props: ChildrenProps) => React.ReactNode
+  ) {
     if (!eventSlug) {
       return null;
     }
 
     const {organization} = this.props;
 
-    return <FetchEvent orgSlug={organization.slug} eventSlug={eventSlug} />;
+    return (
+      <FetchEvent orgSlug={organization.slug} eventSlug={eventSlug}>
+        {renderFunc}
+      </FetchEvent>
+    );
+  }
+
+  renderComparison(baselineEvent: Event, regressionEvent: Event): React.ReactNode {
+    console.log('baselineEvent', baselineEvent);
+    console.log('regressionEvent', regressionEvent);
+    return <div>renderComparison</div>;
   }
 
   render() {
     console.log('props', this.props);
 
-    const {baselineEventSlug} = this.getEventSlugs();
+    const {baselineEventSlug, regressionEventSlug} = this.getEventSlugs();
 
     return (
       <div>
         <div>compare transactions</div>
-        {this.fetchEvent(baselineEventSlug)}
+        {this.fetchEvent(baselineEventSlug, baselineEventResults => {
+          return this.fetchEvent(regressionEventSlug, regressionEventResults => {
+            if (
+              baselineEventResults.isLoading ||
+              baselineEventResults.error ||
+              !baselineEventResults.event ||
+              regressionEventResults.isLoading ||
+              regressionEventResults.error ||
+              !regressionEventResults.event
+            ) {
+              // TODO: better UI handling
+              return null;
+            }
+
+            return this.renderComparison(
+              baselineEventResults.event,
+              regressionEventResults.event
+            );
+          });
+        })}
       </div>
     );
   }
