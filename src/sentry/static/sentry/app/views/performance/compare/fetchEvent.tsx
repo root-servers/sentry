@@ -22,6 +22,14 @@ type State = {
 } & ChildrenProps;
 
 class FetchEvent extends React.Component<Props, State> {
+  state: State = {
+    isLoading: true,
+    tableFetchID: undefined,
+    error: null,
+
+    event: undefined,
+  };
+
   componentDidMount() {
     this.fetchData();
   }
@@ -30,7 +38,7 @@ class FetchEvent extends React.Component<Props, State> {
     const orgSlugChanged = prevProps.orgSlug !== this.props.orgSlug;
     const eventSlugChanged = prevProps.eventSlug !== this.props.eventSlug;
 
-    if (orgSlugChanged || eventSlugChanged) {
+    if (!this.state.isLoading && (orgSlugChanged || eventSlugChanged)) {
       this.fetchData();
     }
   }
