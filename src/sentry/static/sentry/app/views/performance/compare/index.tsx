@@ -2,6 +2,8 @@ import React from 'react';
 import {Params} from 'react-router/lib/Router';
 import {Location} from 'history';
 
+import FetchEvent from './fetchEvent';
+
 type Props = {
   location: Location;
   params: Params;
@@ -10,7 +12,12 @@ type Props = {
 class CompareContainer extends React.Component<Props> {
   render() {
     console.log('props', this.props);
-    return <div>compare transactions</div>;
+    return (
+      <div>
+        <div>compare transactions</div>
+        <FetchEvent />
+      </div>
+    );
   }
 }
 
