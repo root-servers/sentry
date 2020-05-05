@@ -1,11 +1,16 @@
 import React from 'react';
 
-type Props = {};
+import {Client} from 'app/api';
+import withApi from 'app/utils/withApi';
+
+type Props = {
+  api: Client;
+};
 
 class FetchEvent extends React.Component<Props> {
   render() {
-    return null;
+    return <div>FetchEvent</div>;
   }
 }
 
-export default FetchEvent;
+export default withApi(FetchEvent);
