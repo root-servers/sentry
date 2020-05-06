@@ -6,6 +6,8 @@ import {Panel} from 'app/components/panels';
 import {ContentBox, HeaderBox} from 'app/utils/discover/styles';
 import overflowEllipsis from 'app/styles/overflowEllipsis';
 
+import TraceView from './traceView';
+
 type Props = {
   baselineEvent: Event;
   regressionEvent: Event;
@@ -13,7 +15,7 @@ type Props = {
 
 class TransactionComparisonContent extends React.Component<Props> {
   render() {
-    console.log('props', this.props);
+    const {baselineEvent, regressionEvent} = this.props;
 
     return (
       <React.Fragment>
@@ -22,7 +24,9 @@ class TransactionComparisonContent extends React.Component<Props> {
           <StyledTitleHeader>transaction name</StyledTitleHeader>
         </HeaderBox>
         <ContentBox>
-          <Panel>content</Panel>
+          <Panel>
+            <TraceView baselineEvent={baselineEvent} regressionEvent={regressionEvent} />
+          </Panel>
         </ContentBox>
       </React.Fragment>
     );
