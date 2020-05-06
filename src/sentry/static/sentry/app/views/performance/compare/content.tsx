@@ -2,6 +2,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 import {Event} from 'app/types';
+import {Panel} from 'app/components/panels';
 import {ContentBox, HeaderBox} from 'app/utils/discover/styles';
 import overflowEllipsis from 'app/styles/overflowEllipsis';
 
@@ -21,7 +22,7 @@ class TransactionComparisonContent extends React.Component<Props> {
           <StyledTitleHeader>transaction name</StyledTitleHeader>
         </HeaderBox>
         <ContentBox>
-          <div>content</div>
+          <Panel>content</Panel>
         </ContentBox>
       </React.Fragment>
     );
