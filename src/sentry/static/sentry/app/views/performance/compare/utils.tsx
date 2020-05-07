@@ -16,3 +16,18 @@ export type ComparisonReport = {
   baselineTrace: ParsedTraceType;
   regressionTrace: ParsedTraceType;
 };
+
+export function diffTransactions({
+  baselineTrace,
+  regressionTrace,
+}: {
+  baselineTrace: ParsedTraceType;
+  regressionTrace: ParsedTraceType;
+}): ComparisonReport {
+  const report = {
+    baselineTrace,
+    regressionTrace,
+  };
+
+  return report;
+}
