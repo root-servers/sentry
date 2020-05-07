@@ -3,7 +3,7 @@ import React from 'react';
 import {Event} from 'app/types';
 import {getTraceContext} from 'app/components/events/interfaces/spans/utils';
 
-import {isTransactionEvent} from './utils';
+import {isTransactionEvent, diffTransactions} from './utils';
 
 type Props = {
   baselineEvent: Event;
@@ -26,6 +26,13 @@ class TraceView extends React.Component<Props> {
       // TODO: better error
       return <div>There is no trace found in either of the given transactions.</div>;
     }
+
+    console.log(
+      diffTransactions({
+        baselineEvent,
+        regressionEvent,
+      })
+    );
 
     return <div>traceview</div>;
   }
