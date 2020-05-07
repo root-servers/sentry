@@ -54,15 +54,29 @@ export function diffTransactions({
   return report;
 }
 
+export type SpansComparisonReport = {
+  // direct children spans to be compared
+  spansToBeCompared: Array<{
+    baselineSpan: RawSpanType;
+    regressionSpan: RawSpanType;
+  }>;
+};
+
 function compareSpans({
   baselineSpan,
   regressionSpan,
 }: {
   baselineSpan: RawSpanType;
   regressionSpan: RawSpanType;
-}) {
+}): SpansComparisonReport {
   console.log({
     baselineSpan,
     regressionSpan,
   });
+
+  const report = {
+    spansToBeCompared: [],
+  };
+
+  return report;
 }
