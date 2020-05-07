@@ -51,10 +51,13 @@ class TransactionComparisonPage extends React.PureComponent<Props> {
     );
   }
 
-  renderComparison(
-    baselineEventSlug: string | undefined,
-    regressionEventSlug: string | undefined
-  ): React.ReactNode {
+  renderComparison({
+    baselineEventSlug,
+    regressionEventSlug,
+  }: {
+    baselineEventSlug: string | undefined;
+    regressionEventSlug: string | undefined;
+  }): React.ReactNode {
     return this.fetchEvent(baselineEventSlug, baselineEventResults => {
       return this.fetchEvent(regressionEventSlug, regressionEventResults => {
         if (
@@ -79,10 +82,13 @@ class TransactionComparisonPage extends React.PureComponent<Props> {
     });
   }
 
-  getDocumentTitle(
-    baselineEventSlug: string | undefined,
-    regressionEventSlug: string | undefined
-  ): string {
+  getDocumentTitle({
+    baselineEventSlug,
+    regressionEventSlug,
+  }: {
+    baselineEventSlug: string | undefined;
+    regressionEventSlug: string | undefined;
+  }): string {
     if (
       typeof baselineEventSlug === 'string' &&
       typeof regressionEventSlug === 'string'
@@ -102,13 +108,13 @@ class TransactionComparisonPage extends React.PureComponent<Props> {
 
     return (
       <SentryDocumentTitle
-        title={this.getDocumentTitle(baselineEventSlug, regressionEventSlug)}
+        title={this.getDocumentTitle({baselineEventSlug, regressionEventSlug})}
         objSlug={organization.slug}
       >
         <React.Fragment>
           <StyledPageContent>
             <LightWeightNoProjectMessage organization={organization}>
-              {this.renderComparison(baselineEventSlug, regressionEventSlug)}
+              {this.renderComparison({baselineEventSlug, regressionEventSlug})}
             </LightWeightNoProjectMessage>
           </StyledPageContent>
         </React.Fragment>
