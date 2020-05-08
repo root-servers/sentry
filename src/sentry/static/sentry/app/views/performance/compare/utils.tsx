@@ -25,8 +25,15 @@ type DiffSpanType =
       regressionSpan: RawSpanType;
     };
 
+type SpanId = string;
+
+// map span_id to children whose parent_span_id is equal to span_id
+export type SpanChildrenLookupType = Record<SpanId, Array<DiffSpanType>>;
+
 export type ComparisonReport = {
   rootSpans: Array<DiffSpanType>;
+
+  childSpans: SpanChildrenLookupType;
 };
 
 export function diffTransactions({
@@ -40,6 +47,7 @@ export function diffTransactions({
   const regressionTrace = parseTrace(regressionEvent);
 
   const rootSpans: Array<DiffSpanType> = [];
+  const childSpans: SpanChildrenLookupType = {};
 
   // merge the two transaction's span trees
 
@@ -74,17 +82,19 @@ export function diffTransactions({
     const descriptionsEqual = baselineSpan.description === regressionSpan.description;
 
     if (!opNamesEqual || !descriptionsEqual) {
+      const spanComparisonResults: [DiffSpanType, DiffSpanType] = [
+        {
+          comparisonResult: 'baseline',
+          baselineSpan,
+        },
+        {
+          comparisonResult: 'regression',
+          regressionSpan,
+        },
+      ];
+
       if (currentSpans.type === 'root') {
-        rootSpans.push(
-          {
-            comparisonResult: 'baseline',
-            baselineSpan,
-          },
-          {
-            comparisonResult: 'regression',
-            regressionSpan,
-          }
-        );
+        rootSpans.push(...spanComparisonResults);
       } else {
         // TODO:
       }
