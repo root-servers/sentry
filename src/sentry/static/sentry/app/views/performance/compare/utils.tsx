@@ -26,6 +26,13 @@ type DiffSpanType =
       regressionSpan: RawSpanType;
     };
 
+type ComparableSpan = {
+  type: 'descendent';
+  parent_span_id: SpanId;
+  baselineSpan: RawSpanType;
+  regressionSpan: RawSpanType;
+};
+
 // TODO: move this
 type SpanId = string;
 
@@ -61,12 +68,7 @@ export function diffTransactions({
         baselineSpan: RawSpanType;
         regressionSpan: RawSpanType;
       }
-    | {
-        type: 'descendent';
-        parent_span_id: SpanId;
-        baselineSpan: RawSpanType;
-        regressionSpan: RawSpanType;
-      }
+    | ComparableSpan
   > = [
     {
       type: 'root',
@@ -162,6 +164,8 @@ function createChildPairs({
   regressionChildren: Array<SpanType>;
 }) {
   // for each child in baseChildren, pair them with the closest matching child in regressionChildren
+
+  const pairs: Array<ComparableSpan> = [];
 
   regressionChildren = [...regressionChildren];
 
