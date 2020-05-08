@@ -29,8 +29,8 @@ type DiffSpanType =
 type ComparableSpan = {
   type: 'descendent';
   parent_span_id: SpanId;
-  baselineSpan: RawSpanType;
-  regressionSpan: RawSpanType;
+  baselineSpan: SpanType;
+  regressionSpan: SpanType;
 };
 
 // TODO: move this
@@ -124,7 +124,7 @@ export function diffTransactions({
 
     const spanComparisonResult: DiffSpanType = {
       comparisonResult: 'matched',
-      span_id: `${baselineSpan.span_id}${regressionSpan.span_id}`,
+      span_id: generateMergedSpanId({baselineSpan, regressionSpan}),
       baselineSpan,
       regressionSpan,
     };
@@ -142,10 +142,15 @@ export function diffTransactions({
       childSpans[currentSpans.parent_span_id] = spanChildren;
     }
 
-    createChildPairs({
+    const {comparablePairs, children} = createChildPairs({
+      parent_span_id: spanComparisonResult.span_id,
       baseChildren: baselineTrace.childSpans[baselineSpan.span_id],
       regressionChildren: regressionTrace.childSpans[regressionSpan.span_id],
     });
+
+    spansToBeCompared.push(...comparablePairs);
+
+    childSpans[spanComparisonResult.span_id] = children;
   }
 
   const report = {
@@ -157,34 +162,74 @@ export function diffTransactions({
 }
 
 function createChildPairs({
+  parent_span_id,
   baseChildren,
   regressionChildren,
 }: {
+  parent_span_id: SpanId;
   baseChildren: Array<SpanType>;
   regressionChildren: Array<SpanType>;
-}) {
+}): {
+  comparablePairs: Array<ComparableSpan>;
+  children: Array<DiffSpanType>;
+} {
+  // invariant: the parents of baseChildren and regressionChildren are matched spans
+
   // for each child in baseChildren, pair them with the closest matching child in regressionChildren
 
-  const pairs: Array<ComparableSpan> = [];
+  const comparablePairs: Array<ComparableSpan> = [];
+  const children: Array<DiffSpanType> = [];
 
   regressionChildren = [...regressionChildren];
 
   for (const baselineSpan of baseChildren) {
+    // TODO: compare description using similarity index or levenshtein distance?
+
+    // TODO: match all possible candidates and get one closest to the span by start timestamp
+    // or calculate delta to start timestamp, and delta to duration, and get lowest delta(start_time) + delta(duration)
     const maybeIndex = regressionChildren.findIndex(regressionSpan => {
       return matchableSpans({baselineSpan, regressionSpan});
     });
 
     if (maybeIndex < 0) {
-      // TODO:
+      children.push({
+        comparisonResult: 'baseline',
+        baselineSpan,
+      });
       continue;
     }
+
+    const regressionSpan = regressionChildren.splice(maybeIndex, 1)[0];
+
+    comparablePairs.push({
+      type: 'descendent',
+      parent_span_id,
+      baselineSpan,
+      regressionSpan,
+    });
+
+    children.push({
+      comparisonResult: 'matched',
+      span_id: generateMergedSpanId({baselineSpan, regressionSpan}),
+      baselineSpan,
+      regressionSpan,
+    });
   }
 
-  // TODO: compare description using similarity index or levenshtein distance?
+  // push any remaining un-matched regressionSpans
+  for (const regressionSpan of regressionChildren) {
+    children.push({
+      comparisonResult: 'regression',
+      regressionSpan,
+    });
+  }
 
-  // TODO: implement
+  // TODO: sort children by start timestamp
 
-  return null;
+  return {
+    comparablePairs,
+    children,
+  };
 }
 
 function matchableSpans({
