@@ -144,8 +144,8 @@ export function diffTransactions({
 
     const {comparablePairs, children} = createChildPairs({
       parent_span_id: spanComparisonResult.span_id,
-      baseChildren: baselineTrace.childSpans[baselineSpan.span_id],
-      regressionChildren: regressionTrace.childSpans[regressionSpan.span_id],
+      baseChildren: baselineTrace.childSpans[baselineSpan.span_id] ?? [],
+      regressionChildren: regressionTrace.childSpans[regressionSpan.span_id] ?? [],
     });
 
     spansToBeCompared.push(...comparablePairs);
