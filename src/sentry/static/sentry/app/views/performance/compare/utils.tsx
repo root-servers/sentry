@@ -155,7 +155,9 @@ export function diffTransactions({
 
     spansToBeCompared.push(...comparablePairs);
 
-    childSpans[spanComparisonResult.span_id] = children;
+    if (children.length > 0) {
+      childSpans[spanComparisonResult.span_id] = children;
+    }
   }
 
   const report = {
