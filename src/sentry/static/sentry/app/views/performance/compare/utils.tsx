@@ -199,3 +199,13 @@ function matchableSpans({
 
   return opNamesEqual && descriptionsEqual;
 }
+
+function generateMergedSpanId({
+  baselineSpan,
+  regressionSpan,
+}: {
+  baselineSpan: SpanType;
+  regressionSpan: SpanType;
+}): string {
+  return `${baselineSpan.span_id}${regressionSpan.span_id}`;
+}
