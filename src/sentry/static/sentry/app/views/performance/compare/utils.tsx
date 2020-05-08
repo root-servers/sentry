@@ -10,7 +10,24 @@ export function isTransactionEvent(event: any): event is SentryTransactionEvent 
   return event?.type === 'transaction';
 }
 
-export type ComparisonReport = {};
+type DiffSpanType =
+  | {
+      comparisonResult: 'matched';
+      baselineSpan: RawSpanType;
+      regressionSpan: RawSpanType;
+    }
+  | {
+      comparisonResult: 'baseline';
+      baselineSpan: RawSpanType;
+    }
+  | {
+      comparisonResult: 'regression';
+      regressionSpan: RawSpanType;
+    };
+
+export type ComparisonReport = {
+  rootSpans: Array<DiffSpanType>;
+};
 
 export function diffTransactions({
   baselineEvent,
@@ -22,14 +39,18 @@ export function diffTransactions({
   const baselineTrace = parseTrace(baselineEvent);
   const regressionTrace = parseTrace(regressionEvent);
 
+  const rootSpans: Array<DiffSpanType> = [];
+
   // merge the two transaction's span trees
 
   // we maintain a stack of spans to be compared
   const spansToBeCompared: Array<{
+    type: 'root' | 'descendent';
     baselineSpan: RawSpanType;
     regressionSpan: RawSpanType;
   }> = [
     {
+      type: 'root',
       baselineSpan: generateRootSpan(baselineTrace),
       regressionSpan: generateRootSpan(regressionTrace),
     },
@@ -52,18 +73,50 @@ export function diffTransactions({
     const opNamesEqual = baselineSpan.op === regressionSpan.op;
     const descriptionsEqual = baselineSpan.description === regressionSpan.description;
 
-    // caveats
-    // TODO: should we compare sibling position?
-    // TODO: should we compare starting timestamp?
-
     if (!opNamesEqual || !descriptionsEqual) {
-      // TODO:
+      if (currentSpans.type === 'root') {
+        rootSpans.push(
+          {
+            comparisonResult: 'baseline',
+            baselineSpan,
+          },
+          {
+            comparisonResult: 'regression',
+            regressionSpan,
+          }
+        );
+      } else {
+        // TODO:
+      }
+
+      // TODO: handle children
 
       continue;
     }
+
+    const spanComparisonResults: DiffSpanType = {
+      comparisonResult: 'matched',
+      baselineSpan,
+      regressionSpan,
+    };
+
+    if (currentSpans.type === 'root') {
+      rootSpans.push(spanComparisonResults);
+    } else {
+      // rootSpans.push(mergedSpan);
+      // TODO:
+    }
+
+    // TODO: handle children
+    // caveats
+    // TODO: should we compare sibling position?
+    // TODO: should we compare starting timestamp?
+    // for each child in the base span, find the closest matching child in the regression span
   }
 
-  const report = {};
+  const report = {
+    rootSpans,
+  };
 
   return report;
 }
