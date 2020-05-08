@@ -92,28 +92,28 @@ export function diffTransactions({
     // baselineSpan and regressionSpan have equivalent depth levels due to the nature of the tree traversal algorithm.
 
     if (!matchableSpans({baselineSpan, regressionSpan})) {
-      const spanComparisonResults: [DiffSpanType, DiffSpanType] = [
-        {
-          comparisonResult: 'baseline',
-          baselineSpan,
-        },
-        {
-          comparisonResult: 'regression',
-          regressionSpan,
-        },
-      ];
-
       if (currentSpans.type === 'root') {
+        const spanComparisonResults: [DiffSpanType, DiffSpanType] = [
+          {
+            comparisonResult: 'baseline',
+            baselineSpan,
+          },
+          {
+            comparisonResult: 'regression',
+            regressionSpan,
+          },
+        ];
+
         rootSpans.push(...spanComparisonResults);
       } else {
         // invariant: currentSpans.type === 'descendent'
-
-        const spanChildren: Array<DiffSpanType> =
-          childSpans[currentSpans.parent_span_id] ?? [];
-
-        spanChildren.push(...spanComparisonResults);
-
-        childSpans[currentSpans.parent_span_id] = spanChildren;
+        //
+        // TODO: no need to do this; audit this case
+        //
+        // const spanChildren: Array<DiffSpanType> =
+        //   childSpans[currentSpans.parent_span_id] ?? [];
+        // spanChildren.push(...spanComparisonResults);
+        // childSpans[currentSpans.parent_span_id] = spanChildren;
       }
 
       // since baselineSpan and regressionSpan are considered not identical, we do not
@@ -133,13 +133,13 @@ export function diffTransactions({
       rootSpans.push(spanComparisonResult);
     } else {
       // invariant: currentSpans.type === 'descendent'
-
-      const spanChildren: Array<DiffSpanType> =
-        childSpans[currentSpans.parent_span_id] ?? [];
-
-      spanChildren.push(spanComparisonResult);
-
-      childSpans[currentSpans.parent_span_id] = spanChildren;
+      //
+      // TODO: no need to do this; audit this case
+      //
+      // const spanChildren: Array<DiffSpanType> =
+      //   childSpans[currentSpans.parent_span_id] ?? [];
+      // spanChildren.push(spanComparisonResult);
+      // childSpans[currentSpans.parent_span_id] = spanChildren;
     }
 
     const {comparablePairs, children} = createChildPairs({
