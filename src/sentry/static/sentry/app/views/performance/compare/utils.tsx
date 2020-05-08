@@ -22,11 +22,7 @@ export function diffTransactions({
   const baselineTrace = parseTrace(baselineEvent);
   const regressionTrace = parseTrace(regressionEvent);
 
-  const spans = [];
-
   // merge the two transaction's span trees
-
-  const baseRootSpan: RawSpanType = generateRootSpan(baselineTrace);
 
   // we maintain a stack of spans to be compared
   const spansToBeCompared: Array<{
@@ -46,7 +42,25 @@ export function diffTransactions({
       break;
     }
 
-    compareSpans(currentSpans);
+    const {baselineSpan, regressionSpan} = currentSpans;
+
+    // The span from the base transaction is considered 'identical' to the span from the regression transaction
+    // only if they share the same op name, depth level, and description.
+    //
+    // baselineSpan and regressionSpan have equivalent depth levels due to the nature of the tree traversal algorithm.
+
+    const opNamesEqual = baselineSpan.op === regressionSpan.op;
+    const descriptionsEqual = baselineSpan.description === regressionSpan.description;
+
+    // caveats
+    // TODO: should we compare sibling position?
+    // TODO: should we compare starting timestamp?
+
+    if (!opNamesEqual || !descriptionsEqual) {
+      // TODO:
+
+      continue;
+    }
   }
 
   const report = {};
@@ -55,28 +69,14 @@ export function diffTransactions({
 }
 
 export type SpansComparisonReport = {
+  spansAreIdentical: boolean;
+
+  baselineSpan: RawSpanType;
+  regressionSpan: RawSpanType;
+
   // direct children spans to be compared
   spansToBeCompared: Array<{
     baselineSpan: RawSpanType;
     regressionSpan: RawSpanType;
   }>;
 };
-
-function compareSpans({
-  baselineSpan,
-  regressionSpan,
-}: {
-  baselineSpan: RawSpanType;
-  regressionSpan: RawSpanType;
-}): SpansComparisonReport {
-  console.log({
-    baselineSpan,
-    regressionSpan,
-  });
-
-  const report = {
-    spansToBeCompared: [],
-  };
-
-  return report;
-}
