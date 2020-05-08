@@ -1,5 +1,5 @@
 import {SentryTransactionEvent} from 'app/types';
-import {RawSpanType} from 'app/components/events/interfaces/spans/types';
+import {RawSpanType, SpanType} from 'app/components/events/interfaces/spans/types';
 import {parseTrace, generateRootSpan} from 'app/components/events/interfaces/spans/utils';
 
 export function isTransactionEvent(event: any): event is SentryTransactionEvent {
@@ -13,6 +13,7 @@ export function isTransactionEvent(event: any): event is SentryTransactionEvent 
 type DiffSpanType =
   | {
       comparisonResult: 'matched';
+      span_id: SpanId; // baselineSpan.span_id + regressionSpan.span_id
       baselineSpan: RawSpanType;
       regressionSpan: RawSpanType;
     }
@@ -29,6 +30,7 @@ type DiffSpanType =
 type SpanId = string;
 
 // map span_id to children whose parent_span_id is equal to span_id
+// invariant: spans that are matched will have children in this lookup map
 export type SpanChildrenLookupType = Record<SpanId, Array<DiffSpanType>>;
 
 export type ComparisonReport = {
@@ -115,13 +117,15 @@ export function diffTransactions({
         childSpans[currentSpans.parent_span_id] = spanChildren;
       }
 
-      // TODO: handle children
+      // since baselineSpan and regressionSpan are considered not identical, we do not
+      // need to compare their sub-trees
 
       continue;
     }
 
     const spanComparisonResult: DiffSpanType = {
       comparisonResult: 'matched',
+      span_id: `${baselineSpan.span_id}${regressionSpan.span_id}`,
       baselineSpan,
       regressionSpan,
     };
@@ -139,11 +143,10 @@ export function diffTransactions({
       childSpans[currentSpans.parent_span_id] = spanChildren;
     }
 
-    // TODO: handle children
-    // caveats
-    // TODO: should we compare sibling position?
-    // TODO: should we compare starting timestamp?
-    // for each child in the base span, find the closest matching child in the regression span
+    createChildPairs({
+      baseChildren: baselineTrace.childSpans[baselineSpan.span_id],
+      regressionChildren: regressionTrace.childSpans[regressionSpan.span_id],
+    });
   }
 
   const report = {
@@ -154,15 +157,18 @@ export function diffTransactions({
   return report;
 }
 
-export type SpansComparisonReport = {
-  spansAreIdentical: boolean;
+function createChildPairs({
+  baseChildren,
+  regressionChildren,
+}: {
+  baseChildren: Array<SpanType>;
+  regressionChildren: Array<SpanType>;
+}) {
+  // for each child in baseChildren, pair them with the closest matching child in regressionChildren
 
-  baselineSpan: RawSpanType;
-  regressionSpan: RawSpanType;
+  // TODO: compare description using similarity index or levenshtein distance?
 
-  // direct children spans to be compared
-  spansToBeCompared: Array<{
-    baselineSpan: RawSpanType;
-    regressionSpan: RawSpanType;
-  }>;
-};
+  // TODO: implement
+
+  return null;
+}
