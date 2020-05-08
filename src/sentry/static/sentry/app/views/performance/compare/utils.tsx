@@ -120,17 +120,23 @@ export function diffTransactions({
       continue;
     }
 
-    const spanComparisonResults: DiffSpanType = {
+    const spanComparisonResult: DiffSpanType = {
       comparisonResult: 'matched',
       baselineSpan,
       regressionSpan,
     };
 
     if (currentSpans.type === 'root') {
-      rootSpans.push(spanComparisonResults);
+      rootSpans.push(spanComparisonResult);
     } else {
-      // rootSpans.push(mergedSpan);
-      // TODO:
+      // invariant: currentSpans.type === 'descendent'
+
+      const spanChildren: Array<DiffSpanType> =
+        childSpans[currentSpans.parent_span_id] ?? [];
+
+      spanChildren.push(spanComparisonResult);
+
+      childSpans[currentSpans.parent_span_id] = spanChildren;
     }
 
     // TODO: handle children
