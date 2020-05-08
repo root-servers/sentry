@@ -84,6 +84,11 @@ export function diffTransactions({
       break;
     }
 
+    // invariant: the parents of currentSpans are matched spans; with the exception of the root spans of the baseline
+    //            transaction and the regression transaction.
+    // invariant: any unvisited siblings of currentSpans are in spansToBeCompared.
+    // invariant: currentSpans and their siblings are already in childSpans
+
     const {baselineSpan, regressionSpan} = currentSpans;
 
     // The span from the base transaction is considered 'identical' to the span from the regression transaction
