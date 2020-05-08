@@ -25,6 +25,7 @@ type DiffSpanType =
       regressionSpan: RawSpanType;
     };
 
+// TODO: move this
 type SpanId = string;
 
 // map span_id to children whose parent_span_id is equal to span_id
@@ -52,11 +53,19 @@ export function diffTransactions({
   // merge the two transaction's span trees
 
   // we maintain a stack of spans to be compared
-  const spansToBeCompared: Array<{
-    type: 'root' | 'descendent';
-    baselineSpan: RawSpanType;
-    regressionSpan: RawSpanType;
-  }> = [
+  const spansToBeCompared: Array<
+    | {
+        type: 'root';
+        baselineSpan: RawSpanType;
+        regressionSpan: RawSpanType;
+      }
+    | {
+        type: 'descendent';
+        parent_span_id: SpanId;
+        baselineSpan: RawSpanType;
+        regressionSpan: RawSpanType;
+      }
+  > = [
     {
       type: 'root',
       baselineSpan: generateRootSpan(baselineTrace),
@@ -96,7 +105,14 @@ export function diffTransactions({
       if (currentSpans.type === 'root') {
         rootSpans.push(...spanComparisonResults);
       } else {
-        // TODO:
+        // invariant: currentSpans.type === 'descendent'
+
+        const spanChildren: Array<DiffSpanType> =
+          childSpans[currentSpans.parent_span_id] ?? [];
+
+        spanChildren.push(...spanComparisonResults);
+
+        childSpans[currentSpans.parent_span_id] = spanChildren;
       }
 
       // TODO: handle children
@@ -126,6 +142,7 @@ export function diffTransactions({
 
   const report = {
     rootSpans,
+    childSpans,
   };
 
   return report;
