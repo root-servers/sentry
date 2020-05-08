@@ -89,10 +89,7 @@ export function diffTransactions({
     //
     // baselineSpan and regressionSpan have equivalent depth levels due to the nature of the tree traversal algorithm.
 
-    const opNamesEqual = baselineSpan.op === regressionSpan.op;
-    const descriptionsEqual = baselineSpan.description === regressionSpan.description;
-
-    if (!opNamesEqual || !descriptionsEqual) {
+    if (!matchableSpans({baselineSpan, regressionSpan})) {
       const spanComparisonResults: [DiffSpanType, DiffSpanType] = [
         {
           comparisonResult: 'baseline',
@@ -166,9 +163,35 @@ function createChildPairs({
 }) {
   // for each child in baseChildren, pair them with the closest matching child in regressionChildren
 
+  regressionChildren = [...regressionChildren];
+
+  for (const baselineSpan of baseChildren) {
+    const maybeIndex = regressionChildren.findIndex(regressionSpan => {
+      return matchableSpans({baselineSpan, regressionSpan});
+    });
+
+    if (maybeIndex < 0) {
+      // TODO:
+      continue;
+    }
+  }
+
   // TODO: compare description using similarity index or levenshtein distance?
 
   // TODO: implement
 
   return null;
+}
+
+function matchableSpans({
+  baselineSpan,
+  regressionSpan,
+}: {
+  baselineSpan: SpanType;
+  regressionSpan: SpanType;
+}): boolean {
+  const opNamesEqual = baselineSpan.op === regressionSpan.op;
+  const descriptionsEqual = baselineSpan.description === regressionSpan.description;
+
+  return opNamesEqual && descriptionsEqual;
 }
