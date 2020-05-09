@@ -33,7 +33,6 @@ type ComparableSpan = {
   regressionSpan: SpanType;
 };
 
-// TODO: move this
 type SpanId = string;
 
 // map span_id to children whose parent_span_id is equal to span_id
@@ -187,18 +186,72 @@ function createChildPairs({
   const comparablePairs: Array<ComparableSpan> = [];
   const children: Array<DiffSpanType> = [];
 
-  regressionChildren = [...regressionChildren];
+  const remainingRegressionChildren = [...regressionChildren];
 
   for (const baselineSpan of baseChildren) {
-    // TODO: compare description using similarity index or levenshtein distance?
+    const candidates = remainingRegressionChildren.reduce(
+      (
+        acc: Array<{regressionSpan: SpanType; index: number}>,
+        regressionSpan: SpanType,
+        index: number
+      ) => {
+        if (matchableSpans({baselineSpan, regressionSpan})) {
+          acc.push({
+            regressionSpan,
+            index,
+          });
+        }
 
-    // TODO: match all possible candidates and get one closest to the span by start timestamp
-    // or calculate delta to start timestamp, and delta to duration, and get lowest delta(start_time) + delta(duration)
-    const maybeIndex = regressionChildren.findIndex(regressionSpan => {
-      return matchableSpans({baselineSpan, regressionSpan});
+        return acc;
+      },
+      []
+    );
+
+    // the best candidate span is one that has the closest start timestamp to baselineSpan;
+    // and one that has a duration that's close to baselineSpan
+
+    const baselineSpanDuration = Math.abs(
+      baselineSpan.timestamp - baselineSpan.start_timestamp
+    );
+
+    candidates.sort(({regressionSpan: thisSpan}, {regressionSpan: otherSpan}) => {
+      // calculate the deltas of the start timestamps relative to baselineSpan's
+      // start timestamp
+
+      const deltaStartTimestampThisSpan = Math.abs(
+        thisSpan.start_timestamp - baselineSpan.start_timestamp
+      );
+
+      const deltaStartTimestampOtherSpan = Math.abs(
+        otherSpan.start_timestamp - baselineSpan.start_timestamp
+      );
+
+      // calculate the deltas of the durations relative to the baselineSpan's
+      // duration
+
+      const thisSpanDuration = Math.abs(thisSpan.timestamp - thisSpan.start_timestamp);
+      const otherSpanDuration = Math.abs(otherSpan.timestamp - otherSpan.start_timestamp);
+
+      const deltaDurationThisSpan = Math.abs(thisSpanDuration - baselineSpanDuration);
+      const deltaDurationOtherSpan = Math.abs(otherSpanDuration - baselineSpanDuration);
+
+      const thisSpanScore = deltaDurationThisSpan + deltaStartTimestampThisSpan;
+      const otherSpanScore = deltaDurationOtherSpan + deltaStartTimestampOtherSpan;
+
+      if (thisSpanScore < otherSpanScore) {
+        // sort thisSpan before otherSpan
+        return -1;
+      }
+
+      if (thisSpanScore > otherSpanScore) {
+        // sort otherSpan after thisSpan
+        return 1;
+      }
+
+      return 0;
     });
 
-    if (maybeIndex < 0) {
+    if (candidates.length === 0) {
       children.push({
         comparisonResult: 'baseline',
         baselineSpan,
@@ -206,7 +259,10 @@ function createChildPairs({
       continue;
     }
 
-    const regressionSpan = regressionChildren.splice(maybeIndex, 1)[0];
+    const {regressionSpan, index} = candidates[0];
+
+    // remove regressionSpan from list of remainingRegressionChildren
+    remainingRegressionChildren.splice(index, 1);
 
     comparablePairs.push({
       type: 'descendent',
@@ -224,14 +280,33 @@ function createChildPairs({
   }
 
   // push any remaining un-matched regressionSpans
-  for (const regressionSpan of regressionChildren) {
+  for (const regressionSpan of remainingRegressionChildren) {
     children.push({
       comparisonResult: 'regression',
       regressionSpan,
     });
   }
 
-  // TODO: sort children by start timestamp
+  // sort children by start timestamp
+
+  children.sort(function sortSpans(firstSpan: DiffSpanType, secondSpan: DiffSpanType) {
+    // sort spans by their start timestamp in ascending order
+
+    const firstSpanTimestamp = getDiffSpanStartTime(firstSpan);
+    const secondSpanTimestamp = getDiffSpanStartTime(secondSpan);
+
+    if (firstSpanTimestamp < secondSpanTimestamp) {
+      // sort firstSpan before secondSpan
+      return -1;
+    }
+
+    if (firstSpanTimestamp === secondSpanTimestamp) {
+      return 0;
+    }
+
+    // sort secondSpan before firstSpan
+    return 1;
+  });
 
   return {
     comparablePairs,
@@ -260,4 +335,25 @@ function generateMergedSpanId({
   regressionSpan: SpanType;
 }): string {
   return `${baselineSpan.span_id}${regressionSpan.span_id}`;
+}
+
+function getDiffSpanStartTime(diffSpan: DiffSpanType): number {
+  switch (diffSpan.comparisonResult) {
+    case 'matched': {
+      return (
+        (diffSpan.baselineSpan.start_timestamp +
+          diffSpan.regressionSpan.start_timestamp) /
+        2
+      );
+    }
+    case 'baseline': {
+      return diffSpan.baselineSpan.start_timestamp;
+    }
+    case 'regression': {
+      return diffSpan.regressionSpan.start_timestamp;
+    }
+    default: {
+      throw Error('Unknown comparisonResult');
+    }
+  }
 }
