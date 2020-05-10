@@ -189,6 +189,9 @@ function createChildPairs({
   const remainingRegressionChildren = [...regressionChildren];
 
   for (const baselineSpan of baseChildren) {
+    // reduce remainingRegressionChildren down to spans that are applicable candidate
+    // of spans that can be paired with baselineSpan
+
     const candidates = remainingRegressionChildren.reduce(
       (
         acc: Array<{regressionSpan: SpanType; index: number}>,
