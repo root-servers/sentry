@@ -244,7 +244,7 @@ function createChildPairs({
       }
 
       if (thisSpanScore > otherSpanScore) {
-        // sort otherSpan after thisSpan
+        // sort thisSpan after otherSpan
         return 1;
       }
 
