@@ -80,6 +80,8 @@ export function diffTransactions({
     const currentSpans = spansToBeCompared.pop();
 
     if (!currentSpans) {
+      // typescript assumes currentSpans is undefined due to the nature of Array.prototype.pop()
+      // returning undefined if spansToBeCompared is empty. we handle this case for sake of completeness
       break;
     }
 
