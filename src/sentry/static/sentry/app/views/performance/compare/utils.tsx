@@ -207,6 +207,14 @@ function createChildPairs({
       []
     );
 
+    if (candidates.length === 0) {
+      children.push({
+        comparisonResult: 'baseline',
+        baselineSpan,
+      });
+      continue;
+    }
+
     // the best candidate span is one that has the closest start timestamp to baselineSpan;
     // and one that has a duration that's close to baselineSpan
 
@@ -250,14 +258,6 @@ function createChildPairs({
 
       return 0;
     });
-
-    if (candidates.length === 0) {
-      children.push({
-        comparisonResult: 'baseline',
-        baselineSpan,
-      });
-      continue;
-    }
 
     const {regressionSpan, index} = candidates[0];
 
