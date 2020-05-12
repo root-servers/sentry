@@ -162,6 +162,8 @@ export function diffTransactions({
     }
   }
 
+  rootSpans.sort(sortByMostTimeAdded);
+
   const report = {
     rootSpans,
     childSpans,
@@ -295,7 +297,9 @@ function createChildPairs({
 
   // sort children by start timestamp
 
-  children.sort(function sortSpans(firstSpan: DiffSpanType, secondSpan: DiffSpanType) {
+  children.sort(function(firstSpan: DiffSpanType, secondSpan: DiffSpanType) {
+    // TODO: sort by most time added?
+
     // sort spans by their start timestamp in ascending order
 
     const firstSpanTimestamp = getDiffSpanStartTime(firstSpan);
@@ -357,6 +361,107 @@ function getDiffSpanStartTime(diffSpan: DiffSpanType): number {
     }
     case 'regression': {
       return diffSpan.regressionSpan.start_timestamp;
+    }
+    default: {
+      throw Error('Unknown comparisonResult');
+    }
+  }
+}
+
+function getSpanDuration(span: RawSpanType): number {
+  return Math.abs(span.timestamp - span.start_timestamp);
+}
+
+function sortSpans(firstSpan: RawSpanType, secondSpan: RawSpanType): number {
+  const firstSpanDuration = getSpanDuration(firstSpan);
+  const secondSpanDuration = getSpanDuration(secondSpan);
+
+  if (firstSpanDuration > secondSpanDuration) {
+    // sort firstSpan before secondSpan
+    return -1;
+  }
+
+  if (firstSpanDuration < secondSpanDuration) {
+    // sort secondSpan before firstSpan
+    return 1;
+  }
+
+  // try to break ties by sorting by start timestamp in ascending order
+
+  if (firstSpan.start_timestamp < secondSpan.start_timestamp) {
+    // sort firstSpan before secondSpan
+    return -1;
+  }
+
+  if (firstSpan.start_timestamp > secondSpan.start_timestamp) {
+    // sort secondSpan before firstSpan
+    return 1;
+  }
+
+  return 0;
+}
+
+function sortByMostTimeAdded(firstSpan: DiffSpanType, secondSpan: DiffSpanType): number {
+  // Sort the spans by most time added. This means that when comparing the spans of the regression transaction
+  // against the spans of the baseline transaction, we sort the spans by those that have regressed the most
+  // relative to their baseline counter parts first.
+  //
+  // In terms of sort, we display them in the following way:
+  // - Regression only spans; sorted first by duration (descending), and then start timestamps (ascending)
+  // - Matched spans:
+  //     - slower -- i.e. regression.duration - baseline.duration > 0 (sorted by duration deltas, and by duration)
+  //     - no change -- i.e. regression.duration - baseline.duration == 0 (sorted by duration)
+  //     - faster -- i.e. regression.duration - baseline.duration < 0 (sorted by duration deltas, and by duration)
+  // - Baseline only spans; sorted by duration
+
+  switch (firstSpan.comparisonResult) {
+    case 'regression': {
+      switch (secondSpan.comparisonResult) {
+        case 'regression': {
+          return sortSpans(firstSpan.regressionSpan, secondSpan.regressionSpan);
+        }
+        case 'baseline':
+        case 'matched': {
+          // sort firstSpan (regression) before secondSpan (baseline)
+          return -1;
+        }
+        default: {
+          throw Error('Unknown comparisonResult');
+        }
+      }
+    }
+    case 'baseline': {
+      switch (secondSpan.comparisonResult) {
+        case 'baseline': {
+          return sortSpans(firstSpan.baselineSpan, secondSpan.baselineSpan);
+        }
+        case 'regression':
+        case 'matched': {
+          // sort secondSpan (regression or matched) before firstSpan (baseline)
+          return 1;
+        }
+        default: {
+          throw Error('Unknown comparisonResult');
+        }
+      }
+    }
+    case 'matched': {
+      switch (secondSpan.comparisonResult) {
+        case 'regression': {
+          // sort secondSpan (regression) before firstSpan (matched)
+          return 1;
+        }
+        case 'baseline': {
+          // sort firstSpan (matched) before secondSpan (baseline)
+          return -1;
+        }
+        case 'matched': {
+          // TODO: ????
+        }
+        default: {
+          throw Error('Unknown comparisonResult');
+        }
+      }
     }
     default: {
       throw Error('Unknown comparisonResult');
