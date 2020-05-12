@@ -4,6 +4,7 @@ import {Event} from 'app/types';
 import {getTraceContext} from 'app/components/events/interfaces/spans/utils';
 
 import {isTransactionEvent, diffTransactions} from './utils';
+import SpanTree from './spanTree';
 
 type Props = {
   baselineEvent: Event;
@@ -27,14 +28,7 @@ class TraceView extends React.Component<Props> {
       return <div>There is no trace found in either of the given transactions.</div>;
     }
 
-    console.log(
-      diffTransactions({
-        baselineEvent,
-        regressionEvent,
-      })
-    );
-
-    return <div>traceview</div>;
+    return <SpanTree baselineEvent={baselineEvent} regressionEvent={regressionEvent} />;
   }
 }
 
