@@ -368,8 +368,58 @@ function getDiffSpanStartTime(diffSpan: DiffSpanType): number {
   }
 }
 
+function getDiffSpanDuration(diffSpan: DiffSpanType): number {
+  switch (diffSpan.comparisonResult) {
+    case 'matched': {
+      return Math.max(
+        getSpanDuration(diffSpan.baselineSpan),
+        getSpanDuration(diffSpan.regressionSpan)
+      );
+    }
+    case 'baseline': {
+      return getSpanDuration(diffSpan.baselineSpan);
+    }
+    case 'regression': {
+      return getSpanDuration(diffSpan.regressionSpan);
+    }
+    default: {
+      throw Error('Unknown comparisonResult');
+    }
+  }
+}
+
 function getSpanDuration(span: RawSpanType): number {
   return Math.abs(span.timestamp - span.start_timestamp);
+}
+
+function getMatchedSpanDurationDeltas({
+  baselineSpan,
+  regressionSpan,
+}: {
+  baselineSpan: RawSpanType;
+  regressionSpan: RawSpanType;
+}): number {
+  return getSpanDuration(regressionSpan) - getSpanDuration(baselineSpan);
+}
+
+function sortDiffSpansByDuration(
+  firstSpan: DiffSpanType,
+  secondSpan: DiffSpanType
+): number {
+  const firstSpanDuration = getDiffSpanDuration(firstSpan);
+  const secondSpanDuration = getDiffSpanDuration(secondSpan);
+
+  if (firstSpanDuration > secondSpanDuration) {
+    // sort firstSpan before secondSpan
+    return -1;
+  }
+
+  if (firstSpanDuration < secondSpanDuration) {
+    // sort secondSpan before firstSpan
+    return 1;
+  }
+
+  return 0;
 }
 
 function sortSpans(firstSpan: RawSpanType, secondSpan: RawSpanType): number {
@@ -456,7 +506,82 @@ function sortByMostTimeAdded(firstSpan: DiffSpanType, secondSpan: DiffSpanType):
           return -1;
         }
         case 'matched': {
-          // TODO: ????
+          const firstSpanDurationDelta = getMatchedSpanDurationDeltas({
+            regressionSpan: firstSpan.regressionSpan,
+            baselineSpan: firstSpan.baselineSpan,
+          });
+
+          const secondSpanDurationDelta = getMatchedSpanDurationDeltas({
+            regressionSpan: secondSpan.regressionSpan,
+            baselineSpan: secondSpan.baselineSpan,
+          });
+
+          if (firstSpanDurationDelta > 0) {
+            // firstSpan has slower regression span relative to the baseline span
+            if (secondSpanDurationDelta > 0) {
+              // secondSpan has slower regression span relative to the baseline span
+              if (firstSpanDurationDelta > secondSpanDurationDelta) {
+                // sort firstSpan before secondSpan
+                return -1;
+              }
+
+              if (firstSpanDurationDelta < secondSpanDurationDelta) {
+                // sort secondSpan before firstSpan
+                return 1;
+              }
+
+              return sortDiffSpansByDuration(firstSpan, secondSpan);
+            }
+
+            // case: secondSpan is either "no change" or "faster"
+
+            // sort firstSpan before secondSpan
+            return -1;
+          }
+
+          if (firstSpanDurationDelta === 0) {
+            // firstSpan has a regression span relative that didn't change relative to the baseline span
+
+            if (secondSpanDurationDelta > 0) {
+              // secondSpan has slower regression span relative to the baseline span
+
+              // sort secondSpan before firstSpan
+              return 1;
+            }
+
+            if (secondSpanDurationDelta < 0) {
+              // faster
+              // sort firstSpan before secondSpan
+              return -1;
+            }
+
+            // secondSpan has a regression span relative that didn't change relative to the baseline span
+            return sortDiffSpansByDuration(firstSpan, secondSpan);
+          }
+
+          // case: firstSpanDurationDelta < 0
+
+          if (secondSpanDurationDelta >= 0) {
+            // either secondSpan has slower regression span relative to the baseline span,
+            // or the secondSpan has a regression span relative that didn't change relative to the baseline span
+
+            // sort secondSpan before firstSpan
+            return 1;
+          }
+
+          // case: secondSpanDurationDelta < 0
+
+          if (firstSpanDurationDelta < secondSpanDurationDelta) {
+            // sort firstSpan before secondSpan
+            return -1;
+          }
+
+          if (firstSpanDurationDelta > secondSpanDurationDelta) {
+            // sort secondSpan before firstSpan
+            return 1;
+          }
+
+          return sortDiffSpansByDuration(firstSpan, secondSpan);
         }
         default: {
           throw Error('Unknown comparisonResult');
