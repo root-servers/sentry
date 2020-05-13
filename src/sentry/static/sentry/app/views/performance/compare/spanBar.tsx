@@ -416,8 +416,8 @@ class SpanBar extends React.Component<Props, State> {
 const getHatchPattern = ({spanBarHatch}) => {
   if (spanBarHatch === true) {
     return `
-    background-image: linear-gradient(135deg, #b9a2fd 25%, #4a3e56 25%, #4a3e56 50%, #b9a2fd 50%, #b9a2fd 75%, #4a3e56 75%, #4a3e56 100%);
-    background-size: 2.83px 2.83px;
+        background-image: linear-gradient(135deg, #b9a2fd 33.33%, #4a3e56 33.33%, #4a3e56 50%, #b9a2fd 50%, #b9a2fd 83.33%, #4a3e56 83.33%, #4a3e56 100%);
+        background-size: 4.24px 4.24px;
     `;
   }
 
