@@ -2,15 +2,14 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 import {SentryTransactionEvent} from 'app/types';
+import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
 
 import {diffTransactions, DiffSpanType, SpanChildrenLookupType, getSpanID} from './utils';
 import SpanGroup from './spanGroup';
 
 type RenderedSpanTree = {
   spanTree: JSX.Element | null;
-
-  // TODO: needed?
-  // nextSpanNumber: number;
+  nextSpanNumber: number;
   // numOfSpansOutOfViewAbove: number;
   // numOfFilteredSpansAbove: number;
 };
@@ -24,23 +23,46 @@ class SpanTree extends React.Component<Props> {
   renderSpan({
     span,
     childSpans,
+    spanNumber,
+    treeDepth,
+    continuingTreeDepths,
+    isLast,
   }: {
     span: Readonly<DiffSpanType>;
     childSpans: Readonly<SpanChildrenLookupType>;
+    spanNumber: number;
+    treeDepth: number;
+    continuingTreeDepths: Array<TreeDepthType>;
+    isLast: boolean;
   }): RenderedSpanTree {
     const spanChildren: Array<DiffSpanType> = childSpans?.[getSpanID(span)] ?? [];
 
     type AccType = {
       renderedSpanChildren: Array<JSX.Element>;
+      nextSpanNumber: number;
     };
 
+    // TODO: deal with orphan case
+    // const treeDepthEntry = isOrphanSpan(span)
+    //   ? ({type: 'orphan', depth: treeDepth} as OrphanTreeDepth)
+    //   : treeDepth;
+    const treeDepthEntry = treeDepth;
+
+    const treeArr = isLast
+      ? continuingTreeDepths
+      : [...continuingTreeDepths, treeDepthEntry];
+
     const reduced: AccType = spanChildren.reduce(
-      (acc: AccType, spanChild) => {
+      (acc: AccType, spanChild, index) => {
         const key = `${getSpanID(spanChild)}`;
 
         const results = this.renderSpan({
+          spanNumber: acc.nextSpanNumber,
+          isLast: index + 1 === spanChildren.length,
           span: spanChild,
           childSpans,
+          continuingTreeDepths: treeArr,
+          treeDepth: treeDepth + 1,
         });
 
         acc.renderedSpanChildren.push(
@@ -51,16 +73,24 @@ class SpanTree extends React.Component<Props> {
       },
       {
         renderedSpanChildren: [],
+        nextSpanNumber: spanNumber + 1,
       }
     );
 
     const spanTree = (
       <React.Fragment>
-        <SpanGroup span={span} renderedSpanChildren={reduced.renderedSpanChildren} />
+        <SpanGroup
+          spanNumber={spanNumber}
+          span={span}
+          renderedSpanChildren={reduced.renderedSpanChildren}
+          treeDepth={treeDepth}
+          continuingTreeDepths={continuingTreeDepths}
+        />
       </React.Fragment>
     );
 
     return {
+      nextSpanNumber: reduced.nextSpanNumber,
       spanTree,
     };
   }
@@ -78,13 +108,26 @@ class SpanTree extends React.Component<Props> {
     console.log('comparisonReport', comparisonReport);
     console.log('rootSpans', rootSpans);
 
+    let nextSpanNumber = 1;
+
     const spanTree = (
       <React.Fragment key="root-spans-tree">
         {rootSpans.map((rootSpan, index) => {
-          const renderedSpan = this.renderSpan({span: rootSpan, childSpans});
+          const renderedRootSpan = this.renderSpan({
+            isLast: index + 1 === rootSpans.length,
+            span: rootSpan,
+            childSpans,
+            spanNumber: nextSpanNumber,
+            treeDepth: 0,
+            continuingTreeDepths: [],
+          });
+
+          nextSpanNumber = renderedRootSpan.nextSpanNumber;
 
           return (
-            <React.Fragment key={String(index)}>{renderedSpan.spanTree}</React.Fragment>
+            <React.Fragment key={String(index)}>
+              {renderedRootSpan.spanTree}
+            </React.Fragment>
           );
         })}
       </React.Fragment>
@@ -92,6 +135,7 @@ class SpanTree extends React.Component<Props> {
 
     return {
       spanTree,
+      nextSpanNumber,
     };
   }
 

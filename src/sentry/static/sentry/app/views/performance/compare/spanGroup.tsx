@@ -1,11 +1,16 @@
 import React from 'react';
 
+import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
+
 import {DiffSpanType} from './utils';
 import SpanBar from './spanBar';
 
 type Props = {
   span: Readonly<DiffSpanType>;
   renderedSpanChildren: Array<JSX.Element>;
+  treeDepth: number;
+  continuingTreeDepths: Array<TreeDepthType>;
+  spanNumber: number;
 };
 
 type State = {
@@ -32,11 +37,16 @@ class SpanGroup extends React.Component<Props, State> {
   };
 
   render() {
-    const {span} = this.props;
+    const {span, treeDepth, continuingTreeDepths, spanNumber} = this.props;
 
     return (
       <React.Fragment>
-        <SpanBar span={span} />
+        <SpanBar
+          span={span}
+          treeDepth={treeDepth}
+          continuingTreeDepths={continuingTreeDepths}
+          spanNumber={spanNumber}
+        />
         {this.renderSpanChildren()}
       </React.Fragment>
     );

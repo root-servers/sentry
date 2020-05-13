@@ -14,16 +14,16 @@ export type DiffSpanType =
   | {
       comparisonResult: 'matched';
       span_id: SpanId; // baselineSpan.span_id + regressionSpan.span_id
-      baselineSpan: RawSpanType;
-      regressionSpan: RawSpanType;
+      baselineSpan: SpanType;
+      regressionSpan: SpanType;
     }
   | {
       comparisonResult: 'baseline';
-      baselineSpan: RawSpanType;
+      baselineSpan: SpanType;
     }
   | {
       comparisonResult: 'regression';
-      regressionSpan: RawSpanType;
+      regressionSpan: SpanType;
     };
 
 type ComparableSpan = {

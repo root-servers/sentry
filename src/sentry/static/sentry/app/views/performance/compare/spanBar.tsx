@@ -1,5 +1,6 @@
 import React from 'react';
 
+import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
 import {SpanRow} from 'app/components/events/interfaces/spans/styles';
 import {
   SpanRowCellContainer,
@@ -11,15 +12,18 @@ import {DiffSpanType, getSpanID} from './utils';
 
 type Props = {
   span: Readonly<DiffSpanType>;
+  treeDepth: number;
+  continuingTreeDepths: Array<TreeDepthType>;
+  spanNumber: number;
 };
 
 class SpanBar extends React.Component<Props> {
   renderTitle() {
-    const {span} = this.props;
+    const {span, treeDepth} = this.props;
 
     return (
       <div>
-        {getSpanID(span)} - {span.comparisonResult}
+        {treeDepth} - {getSpanID(span)} - {span.comparisonResult}
       </div>
     );
   }
