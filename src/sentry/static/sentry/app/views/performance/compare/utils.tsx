@@ -64,6 +64,25 @@ export function diffTransactions({
   const rootSpans: Array<DiffSpanType> = [];
   const childSpans: SpanChildrenLookupType = {};
 
+  // merge childSpans of baselineTrace and regressionTrace together
+  for (const [parentSpanId, children] of Object.entries(baselineTrace.childSpans)) {
+    childSpans[parentSpanId] = children.map(baselineSpan => {
+      return {
+        comparisonResult: 'baseline',
+        baselineSpan,
+      };
+    });
+  }
+
+  for (const [parentSpanId, children] of Object.entries(regressionTrace.childSpans)) {
+    childSpans[parentSpanId] = children.map(regressionSpan => {
+      return {
+        comparisonResult: 'regression',
+        regressionSpan,
+      };
+    });
+  }
+
   // merge the two transaction's span trees
 
   // we maintain a stack of spans to be compared
