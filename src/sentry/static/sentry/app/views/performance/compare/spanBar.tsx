@@ -1,5 +1,7 @@
 import React from 'react';
+import styled from '@emotion/styled';
 
+import theme from 'app/utils/theme';
 import Count from 'app/components/count';
 import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
 import {SPAN_ROW_HEIGHT, SpanRow} from 'app/components/events/interfaces/spans/styles';
@@ -16,7 +18,6 @@ import {
   SpanTreeConnector,
   SpanTreeToggler,
   DividerLine,
-  SpanBarRectangle,
 } from 'app/components/events/interfaces/spans/spanBar';
 import {
   toPercent,
@@ -32,6 +33,8 @@ import {
   getSpanDescription,
   isOrphanDiffSpan,
   SpanGeneratedBoundsType,
+  getSpanDuration,
+  generateCSSWidth,
 } from './utils';
 
 type Props = {
@@ -262,24 +265,79 @@ class SpanBar extends React.Component<Props, State> {
     );
   };
 
-  getBounds() {
+  getSpanBarStyles() {
     const {span, generateBounds} = this.props;
 
     const bounds = generateBounds(span);
 
-    switch (bounds.type) {
-      case 'WIDTH_PIXEL': {
+    switch (span.comparisonResult) {
+      case 'matched': {
+        const baselineDuration = getSpanDuration(span.baselineSpan);
+        const regressionDuration = getSpanDuration(span.regressionSpan);
+
+        if (baselineDuration === regressionDuration) {
+          return {
+            background: {
+              color: undefined,
+              width: generateCSSWidth(bounds.background),
+              hatch: true,
+            },
+            foreground: undefined,
+          };
+        }
+
+        if (baselineDuration > regressionDuration) {
+          return {
+            background: {
+              // baseline
+              color: theme.gray5,
+              width: generateCSSWidth(bounds.background),
+            },
+            foreground: {
+              // regression
+              color: undefined,
+              width: generateCSSWidth(bounds.foreground),
+              hatch: true,
+            },
+          };
+        }
+
+        // case: baselineDuration < regressionDuration
+
         return {
-          width: `${bounds.width}px`,
+          background: {
+            // regression
+            color: theme.purpleLightest,
+            width: generateCSSWidth(bounds.background),
+          },
+          foreground: {
+            // baseline
+            color: undefined,
+            width: generateCSSWidth(bounds.foreground),
+            hatch: true,
+          },
         };
       }
-      case 'WIDTH_PERCENTAGE': {
+      case 'regression': {
         return {
-          width: toPercent(bounds.width),
+          background: {
+            color: theme.purpleLightest,
+            width: generateCSSWidth(bounds.background),
+          },
+          foreground: undefined,
+        };
+      }
+      case 'baseline': {
+        return {
+          background: {
+            color: theme.gray5,
+            width: generateCSSWidth(bounds.background),
+          },
+          foreground: undefined,
         };
       }
       default: {
-        const _exhaustiveCheck: never = bounds;
+        const _exhaustiveCheck: never = span;
         return _exhaustiveCheck;
       }
     }
@@ -291,7 +349,21 @@ class SpanBar extends React.Component<Props, State> {
     const {dividerPosition} = dividerHandlerChildrenProps;
     const {spanNumber} = this.props;
 
-    const bounds = this.getBounds();
+    const spanBarStyles = this.getSpanBarStyles();
+
+    const foregroundSpanBar = spanBarStyles.foreground ? (
+      <SpanBarRectangle
+        spanBarHatch={spanBarStyles.foreground.hatch ?? false}
+        style={{
+          backgroundColor: spanBarStyles.foreground.color,
+          left: '0',
+          width: spanBarStyles.foreground.width,
+          position: 'absolute',
+          top: '4px',
+          height: '16px',
+        }}
+      />
+    ) : null;
 
     return (
       <SpanRowCellContainer>
@@ -311,15 +383,17 @@ class SpanBar extends React.Component<Props, State> {
           }}
         >
           <SpanBarRectangle
-            spanBarHatch={false}
+            spanBarHatch={spanBarStyles.background.hatch ?? false}
             style={{
-              backgroundColor: 'red',
+              backgroundColor: spanBarStyles.background.color,
               left: '0',
-              width: bounds.width,
+              width: spanBarStyles.background.width,
+              position: 'absolute',
+              top: '4px',
+              height: '16px',
             }}
-          >
-            foo
-          </SpanBarRectangle>
+          />
+          {foregroundSpanBar}
         </SpanRowCell>
         {this.renderDivider(dividerHandlerChildrenProps)}
       </SpanRowCellContainer>
@@ -338,5 +412,26 @@ class SpanBar extends React.Component<Props, State> {
     );
   }
 }
+
+const getHatchPattern = ({spanBarHatch}) => {
+  if (spanBarHatch === true) {
+    return `
+        background-image: linear-gradient(45deg, #dedae3 10%, #f4f2f7 10%, #f4f2f7 50%, #dedae3 50%, #dedae3 60%, #f4f2f7 60%, #f4f2f7 100%);
+        background-size: 6.5px 6.5px;
+    `;
+  }
+
+  return null;
+};
+
+const SpanBarRectangle = styled('div')<{spanBarHatch: boolean}>`
+  position: relative;
+  height: 100%;
+  min-width: 1px;
+  user-select: none;
+  transition: border-color 0.15s ease-in-out;
+  border-right: 1px solid rgba(0, 0, 0, 0);
+  ${getHatchPattern}
+`;
 
 export default SpanBar;

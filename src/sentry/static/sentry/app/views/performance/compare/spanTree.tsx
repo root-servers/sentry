@@ -159,6 +159,8 @@ class SpanTree extends React.Component<Props> {
       </React.Fragment>
     );
 
+    console.log('num of spans', nextSpanNumber - 1);
+
     return {
       spanTree,
       nextSpanNumber,

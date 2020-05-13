@@ -4,6 +4,7 @@ import {
   parseTrace,
   generateRootSpan,
   isOrphanSpan,
+  toPercent,
 } from 'app/components/events/interfaces/spans/utils';
 
 export function isTransactionEvent(event: any): event is SentryTransactionEvent {
@@ -399,7 +400,7 @@ function getDiffSpanDuration(diffSpan: DiffSpanType): number {
   }
 }
 
-function getSpanDuration(span: RawSpanType): number {
+export function getSpanDuration(span: RawSpanType): number {
   return Math.abs(span.timestamp - span.start_timestamp);
 }
 
@@ -673,7 +674,7 @@ export function isOrphanDiffSpan(diffSpan: DiffSpanType): boolean {
   }
 }
 
-export type SpanGeneratedBoundsType =
+type SpanWidths =
   | {
       type: 'WIDTH_PIXEL';
       width: 1;
@@ -682,6 +683,31 @@ export type SpanGeneratedBoundsType =
       type: 'WIDTH_PERCENTAGE';
       width: number;
     };
+
+export type SpanGeneratedBoundsType = {
+  background: SpanWidths;
+  foreground: SpanWidths | undefined;
+};
+
+function generateWidth({
+  duration,
+  largestDuration,
+}: {
+  duration: number;
+  largestDuration: number;
+}): SpanWidths {
+  if (duration <= 0) {
+    return {
+      type: 'WIDTH_PIXEL',
+      width: 1,
+    };
+  }
+
+  return {
+    type: 'WIDTH_PERCENTAGE',
+    width: duration / largestDuration,
+  };
+}
 
 export function boundsGenerator(rootSpans: Array<DiffSpanType>) {
   // get largest duration among the root spans.
@@ -694,18 +720,62 @@ export function boundsGenerator(rootSpans: Array<DiffSpanType>) {
   );
 
   return (span: DiffSpanType): SpanGeneratedBoundsType => {
-    const spanDuration = getDiffSpanDuration(span);
+    switch (span.comparisonResult) {
+      case 'matched': {
+        const baselineDuration = getSpanDuration(span.baselineSpan);
+        const regressionDuration = getSpanDuration(span.regressionSpan);
 
-    if (spanDuration <= 0) {
-      return {
-        type: 'WIDTH_PIXEL',
-        width: 1,
-      };
+        if (baselineDuration >= regressionDuration) {
+          return {
+            background: generateWidth({duration: baselineDuration, largestDuration}),
+            foreground: generateWidth({duration: regressionDuration, largestDuration}),
+          };
+        }
+
+        // case: baselineDuration < regressionDuration
+
+        return {
+          background: generateWidth({duration: regressionDuration, largestDuration}),
+          foreground: generateWidth({duration: baselineDuration, largestDuration}),
+        };
+      }
+      case 'regression': {
+        const regressionDuration = getSpanDuration(span.regressionSpan);
+        return {
+          background: generateWidth({duration: regressionDuration, largestDuration}),
+          foreground: undefined,
+        };
+      }
+      case 'baseline': {
+        const baselineDuration = getSpanDuration(span.baselineSpan);
+        return {
+          background: generateWidth({duration: baselineDuration, largestDuration}),
+          foreground: undefined,
+        };
+      }
+      default: {
+        const _exhaustiveCheck: never = span;
+        return _exhaustiveCheck;
+      }
     }
-
-    return {
-      type: 'WIDTH_PERCENTAGE',
-      width: spanDuration / largestDuration,
-    };
   };
+}
+
+export function generateCSSWidth(width: SpanWidths | undefined): string | undefined {
+  if (!width) {
+    return undefined;
+  }
+
+  switch (width.type) {
+    case 'WIDTH_PIXEL': {
+      return `${width.width}px`;
+    }
+    case 'WIDTH_PERCENTAGE': {
+      return toPercent(width.width);
+    }
+    default: {
+      const _exhaustiveCheck: never = width;
+      return _exhaustiveCheck;
+    }
+  }
 }
