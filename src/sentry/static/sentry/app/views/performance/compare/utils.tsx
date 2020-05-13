@@ -328,26 +328,27 @@ function generateMergedSpanId({
   return `${baselineSpan.span_id}${regressionSpan.span_id}`;
 }
 
-function getDiffSpanStartTime(diffSpan: DiffSpanType): number {
-  switch (diffSpan.comparisonResult) {
-    case 'matched': {
-      return (
-        (diffSpan.baselineSpan.start_timestamp +
-          diffSpan.regressionSpan.start_timestamp) /
-        2
-      );
-    }
-    case 'baseline': {
-      return diffSpan.baselineSpan.start_timestamp;
-    }
-    case 'regression': {
-      return diffSpan.regressionSpan.start_timestamp;
-    }
-    default: {
-      throw Error('Unknown comparisonResult');
-    }
-  }
-}
+// TODO: remove if unused
+// function getDiffSpanStartTime(diffSpan: DiffSpanType): number {
+//   switch (diffSpan.comparisonResult) {
+//     case 'matched': {
+//       return (
+//         (diffSpan.baselineSpan.start_timestamp +
+//           diffSpan.regressionSpan.start_timestamp) /
+//         2
+//       );
+//     }
+//     case 'baseline': {
+//       return diffSpan.baselineSpan.start_timestamp;
+//     }
+//     case 'regression': {
+//       return diffSpan.regressionSpan.start_timestamp;
+//     }
+//     default: {
+//       throw Error('Unknown comparisonResult');
+//     }
+//   }
+// }
 
 function getDiffSpanDuration(diffSpan: DiffSpanType): number {
   switch (diffSpan.comparisonResult) {
