@@ -15,12 +15,14 @@ import {
   ConnectorBar,
   SpanTreeConnector,
   SpanTreeToggler,
+  DividerLine,
 } from 'app/components/events/interfaces/spans/spanBar';
 import {
   toPercent,
   unwrapTreeDepth,
   isOrphanTreeDepth,
 } from 'app/components/events/interfaces/spans/utils';
+import * as DividerHandlerManager from 'app/components/events/interfaces/spans/dividerHandlerManager';
 
 import {
   DiffSpanType,
@@ -42,7 +44,15 @@ type Props = {
   toggleSpanTree: () => void;
 };
 
-class SpanBar extends React.Component<Props> {
+type State = {
+  showDetail: boolean;
+};
+
+class SpanBar extends React.Component<Props, State> {
+  state: State = {
+    showDetail: false,
+  };
+
   renderSpanTreeConnector = ({hasToggler}: {hasToggler: boolean}) => {
     const {
       isLast,
@@ -188,10 +198,71 @@ class SpanBar extends React.Component<Props> {
     );
   }
 
-  renderHeader() {
-    // TODO:
-    const dividerPosition = 0.5;
+  renderDivider = (
+    dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
+  ) => {
+    if (this.state.showDetail) {
+      // we would like to hide the divider lines when the span details
+      // has been expanded
+      return null;
+    }
 
+    const {
+      dividerPosition,
+      addDividerLineRef,
+      addGhostDividerLineRef,
+    } = dividerHandlerChildrenProps;
+
+    // We display the ghost divider line for whenever the divider line is being dragged.
+    // The ghost divider line indicates the original position of the divider line
+    const ghostDivider = (
+      <DividerLine
+        ref={addGhostDividerLineRef()}
+        style={{
+          left: toPercent(dividerPosition),
+          display: 'none',
+        }}
+        onClick={event => {
+          // the ghost divider line should not be interactive.
+          // we prevent the propagation of the clicks from this component to prevent
+          // the span detail from being opened.
+          event.stopPropagation();
+        }}
+      />
+    );
+
+    return (
+      <React.Fragment>
+        {ghostDivider}
+        <DividerLine
+          ref={addDividerLineRef()}
+          style={{
+            left: toPercent(dividerPosition),
+          }}
+          onMouseEnter={() => {
+            dividerHandlerChildrenProps.setHover(true);
+          }}
+          onMouseLeave={() => {
+            dividerHandlerChildrenProps.setHover(false);
+          }}
+          onMouseOver={() => {
+            dividerHandlerChildrenProps.setHover(true);
+          }}
+          onMouseDown={dividerHandlerChildrenProps.onDragStart}
+          onClick={event => {
+            // we prevent the propagation of the clicks from this component to prevent
+            // the span detail from being opened.
+            event.stopPropagation();
+          }}
+        />
+      </React.Fragment>
+    );
+  };
+
+  renderHeader(
+    dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
+  ) {
+    const {dividerPosition} = dividerHandlerChildrenProps;
     const {spanNumber} = this.props;
 
     return (
@@ -213,12 +284,21 @@ class SpanBar extends React.Component<Props> {
         >
           bar here
         </SpanRowCell>
+        {this.renderDivider(dividerHandlerChildrenProps)}
       </SpanRowCellContainer>
     );
   }
 
   render() {
-    return <SpanRow visible>{this.renderHeader()}</SpanRow>;
+    return (
+      <SpanRow visible>
+        <DividerHandlerManager.Consumer>
+          {(
+            dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
+          ) => this.renderHeader(dividerHandlerChildrenProps)}
+        </DividerHandlerManager.Consumer>
+      </SpanRow>
+    );
   }
 }
 

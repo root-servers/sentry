@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 
 import {SentryTransactionEvent} from 'app/types';
 import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
+import * as DividerHandlerManager from 'app/components/events/interfaces/spans/dividerHandlerManager';
 
 import {diffTransactions, DiffSpanType, SpanChildrenLookupType, getSpanID} from './utils';
 import SpanGroup from './spanGroup';
@@ -20,6 +21,8 @@ type Props = {
 };
 
 class SpanTree extends React.Component<Props> {
+  traceViewRef = React.createRef<HTMLDivElement>();
+
   renderSpan({
     span,
     childSpans,
@@ -151,7 +154,11 @@ class SpanTree extends React.Component<Props> {
   render() {
     const {spanTree} = this.renderRootSpans();
 
-    return <TraceViewContainer>{spanTree}</TraceViewContainer>;
+    return (
+      <DividerHandlerManager.Provider interactiveLayerRef={this.traceViewRef}>
+        <TraceViewContainer ref={this.traceViewRef}>{spanTree}</TraceViewContainer>
+      </DividerHandlerManager.Provider>
+    );
   }
 }
 
