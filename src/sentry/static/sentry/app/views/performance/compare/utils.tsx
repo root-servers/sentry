@@ -15,6 +15,7 @@ export type DiffSpanType =
       comparisonResult: 'matched';
       span_id: SpanId; // baselineSpan.span_id + regressionSpan.span_id
       op: string | undefined;
+      description: string | undefined;
       baselineSpan: SpanType;
       regressionSpan: SpanType;
     }
@@ -134,6 +135,7 @@ export function diffTransactions({
       comparisonResult: 'matched',
       span_id: generateMergedSpanId({baselineSpan, regressionSpan}),
       op: baselineSpan.op,
+      description: baselineSpan.description,
       baselineSpan,
       regressionSpan,
     };
@@ -285,6 +287,7 @@ function createChildPairs({
       comparisonResult: 'matched',
       span_id: generateMergedSpanId({baselineSpan, regressionSpan}),
       op: baselineSpan.op,
+      description: baselineSpan.description,
       baselineSpan,
       regressionSpan,
     });
@@ -606,6 +609,23 @@ export function getSpanOperation(diffSpan: DiffSpanType): string | undefined {
     }
     case 'regression': {
       return diffSpan.regressionSpan.op;
+    }
+    default: {
+      throw Error('Unknown comparisonResult');
+    }
+  }
+}
+
+export function getSpanDescription(diffSpan: DiffSpanType): string | undefined {
+  switch (diffSpan.comparisonResult) {
+    case 'matched': {
+      return diffSpan.description;
+    }
+    case 'baseline': {
+      return diffSpan.baselineSpan.description;
+    }
+    case 'regression': {
+      return diffSpan.regressionSpan.description;
     }
     default: {
       throw Error('Unknown comparisonResult');
