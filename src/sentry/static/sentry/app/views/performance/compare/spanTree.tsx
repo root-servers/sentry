@@ -56,10 +56,7 @@ class SpanTree extends React.Component<Props> {
 
     const spanTree = (
       <React.Fragment>
-        <div>
-          {getSpanID(span)} - {span.comparisonResult}
-        </div>
-        <SpanGroup renderedSpanChildren={reduced.renderedSpanChildren} />
+        <SpanGroup span={span} renderedSpanChildren={reduced.renderedSpanChildren} />
       </React.Fragment>
     );
 
