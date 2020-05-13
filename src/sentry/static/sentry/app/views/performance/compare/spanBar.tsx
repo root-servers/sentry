@@ -1,7 +1,8 @@
 import React from 'react';
 
+import Count from 'app/components/count';
 import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
-import {SpanRow} from 'app/components/events/interfaces/spans/styles';
+import {SPAN_ROW_HEIGHT, SpanRow} from 'app/components/events/interfaces/spans/styles';
 import {
   TOGGLE_BORDER_BOX,
   SpanRowCellContainer,
@@ -9,10 +10,25 @@ import {
   SpanBarTitleContainer,
   SpanBarTitle,
   OperationName,
+  Chevron,
+  SpanTreeTogglerContainer,
+  ConnectorBar,
+  SpanTreeConnector,
+  SpanTreeToggler,
 } from 'app/components/events/interfaces/spans/spanBar';
-import {toPercent} from 'app/components/events/interfaces/spans/utils';
+import {
+  toPercent,
+  unwrapTreeDepth,
+  isOrphanTreeDepth,
+} from 'app/components/events/interfaces/spans/utils';
 
-import {DiffSpanType, getSpanID, getSpanOperation, getSpanDescription} from './utils';
+import {
+  DiffSpanType,
+  getSpanID,
+  getSpanOperation,
+  getSpanDescription,
+  isOrphanDiffSpan,
+} from './utils';
 
 type Props = {
   span: Readonly<DiffSpanType>;
@@ -22,11 +38,121 @@ type Props = {
   numOfSpanChildren: number;
   isRoot: boolean;
   isLast: boolean;
+  showSpanTree: boolean;
+  toggleSpanTree: () => void;
 };
 
 class SpanBar extends React.Component<Props> {
+  renderSpanTreeConnector = ({hasToggler}: {hasToggler: boolean}) => {
+    const {
+      isLast,
+      isRoot,
+      treeDepth: spanTreeDepth,
+      continuingTreeDepths,
+      span,
+    } = this.props;
+
+    const spanID = getSpanID(span);
+
+    if (isRoot) {
+      if (hasToggler) {
+        return (
+          <ConnectorBar
+            style={{right: '16px', height: '10px', bottom: '-5px', top: 'auto'}}
+            key={`${spanID}-last`}
+            orphanBranch={false}
+          />
+        );
+      }
+
+      return null;
+    }
+
+    const connectorBars: Array<React.ReactNode> = continuingTreeDepths.map(treeDepth => {
+      const depth: number = unwrapTreeDepth(treeDepth);
+
+      if (depth === 0) {
+        // do not render a connector bar at depth 0,
+        // if we did render a connector bar, this bar would be placed at depth -1
+        // which does not exist.
+        return null;
+      }
+      const left = ((spanTreeDepth - depth) * (TOGGLE_BORDER_BOX / 2) + 1) * -1;
+
+      return (
+        <ConnectorBar
+          style={{left}}
+          key={`${spanID}-${depth}`}
+          orphanBranch={isOrphanTreeDepth(treeDepth)}
+        />
+      );
+    });
+
+    if (hasToggler) {
+      // if there is a toggle button, we add a connector bar to create an attachment
+      // between the toggle button and any connector bars below the toggle button
+      connectorBars.push(
+        <ConnectorBar
+          style={{
+            right: '16px',
+            height: '10px',
+            bottom: isLast ? `-${SPAN_ROW_HEIGHT / 2}px` : '0',
+            top: 'auto',
+          }}
+          key={`${spanID}-last`}
+          orphanBranch={false}
+        />
+      );
+    }
+
+    return (
+      <SpanTreeConnector
+        isLast={isLast}
+        hasToggler={hasToggler}
+        orphanBranch={isOrphanDiffSpan(span)}
+      >
+        {connectorBars}
+      </SpanTreeConnector>
+    );
+  };
+
   renderSpanTreeToggler = ({left}: {left: number}) => {
-    return <div>toggler {left}</div>;
+    const {numOfSpanChildren, isRoot} = this.props;
+
+    const chevronSrc = this.props.showSpanTree ? 'icon-chevron-up' : 'icon-chevron-down';
+    const chevron = <Chevron src={chevronSrc} />;
+
+    if (numOfSpanChildren <= 0) {
+      return (
+        <SpanTreeTogglerContainer style={{left: `${left}px`}}>
+          {this.renderSpanTreeConnector({hasToggler: false})}
+        </SpanTreeTogglerContainer>
+      );
+    }
+
+    const chevronElement = !isRoot ? <div>{chevron}</div> : null;
+
+    return (
+      <SpanTreeTogglerContainer style={{left: `${left}px`}} hasToggler>
+        {this.renderSpanTreeConnector({hasToggler: true})}
+        <SpanTreeToggler
+          disabled={!!isRoot}
+          isExpanded={this.props.showSpanTree}
+          onClick={event => {
+            event.stopPropagation();
+
+            if (isRoot) {
+              return;
+            }
+
+            this.props.toggleSpanTree();
+          }}
+        >
+          <Count value={numOfSpanChildren} />
+          {chevronElement}
+        </SpanTreeToggler>
+      </SpanTreeTogglerContainer>
+    );
   };
 
   renderTitle() {

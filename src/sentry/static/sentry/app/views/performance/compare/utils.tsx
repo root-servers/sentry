@@ -1,6 +1,10 @@
 import {SentryTransactionEvent} from 'app/types';
 import {RawSpanType, SpanType} from 'app/components/events/interfaces/spans/types';
-import {parseTrace, generateRootSpan} from 'app/components/events/interfaces/spans/utils';
+import {
+  parseTrace,
+  generateRootSpan,
+  isOrphanSpan,
+} from 'app/components/events/interfaces/spans/utils';
 
 export function isTransactionEvent(event: any): event is SentryTransactionEvent {
   if (!event) {
@@ -626,6 +630,23 @@ export function getSpanDescription(diffSpan: DiffSpanType): string | undefined {
     }
     case 'regression': {
       return diffSpan.regressionSpan.description;
+    }
+    default: {
+      throw Error('Unknown comparisonResult');
+    }
+  }
+}
+
+export function isOrphanDiffSpan(diffSpan: DiffSpanType): boolean {
+  switch (diffSpan.comparisonResult) {
+    case 'matched': {
+      return isOrphanSpan(diffSpan.baselineSpan) || isOrphanSpan(diffSpan.regressionSpan);
+    }
+    case 'baseline': {
+      return isOrphanSpan(diffSpan.baselineSpan);
+    }
+    case 'regression': {
+      return isOrphanSpan(diffSpan.regressionSpan);
     }
     default: {
       throw Error('Unknown comparisonResult');

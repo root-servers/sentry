@@ -60,6 +60,8 @@ class SpanGroup extends React.Component<Props, State> {
           isLast={isLast}
           isRoot={isRoot}
           numOfSpanChildren={numOfSpanChildren}
+          showSpanTree={this.state.showSpanTree}
+          toggleSpanTree={this.toggleSpanTree}
         />
         {this.renderSpanChildren()}
       </React.Fragment>
