@@ -72,6 +72,8 @@ class SpanTree extends React.Component<Props> {
           <React.Fragment key={key}>{results.spanTree}</React.Fragment>
         );
 
+        acc.nextSpanNumber = results.nextSpanNumber;
+
         return acc;
       },
       {

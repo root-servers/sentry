@@ -192,6 +192,8 @@ class SpanBar extends React.Component<Props> {
     // TODO:
     const dividerPosition = 0.5;
 
+    const {spanNumber} = this.props;
+
     return (
       <SpanRowCellContainer>
         <SpanRowCell
@@ -203,6 +205,7 @@ class SpanBar extends React.Component<Props> {
           {this.renderTitle()}
         </SpanRowCell>
         <SpanRowCell
+          showStriping={spanNumber % 2 !== 0}
           style={{
             left: toPercent(dividerPosition),
             width: toPercent(1 - dividerPosition),
