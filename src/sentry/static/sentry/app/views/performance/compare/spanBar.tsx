@@ -19,6 +19,9 @@ type Props = {
   treeDepth: number;
   continuingTreeDepths: Array<TreeDepthType>;
   spanNumber: number;
+  numOfSpanChildren: number;
+  isRoot: boolean;
+  isLast: boolean;
 };
 
 class SpanBar extends React.Component<Props> {

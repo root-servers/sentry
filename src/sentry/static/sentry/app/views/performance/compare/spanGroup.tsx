@@ -11,6 +11,9 @@ type Props = {
   treeDepth: number;
   continuingTreeDepths: Array<TreeDepthType>;
   spanNumber: number;
+  isLast: boolean;
+  isRoot: boolean;
+  numOfSpanChildren: number;
 };
 
 type State = {
@@ -37,7 +40,15 @@ class SpanGroup extends React.Component<Props, State> {
   };
 
   render() {
-    const {span, treeDepth, continuingTreeDepths, spanNumber} = this.props;
+    const {
+      span,
+      treeDepth,
+      continuingTreeDepths,
+      spanNumber,
+      isLast,
+      isRoot,
+      numOfSpanChildren,
+    } = this.props;
 
     return (
       <React.Fragment>
@@ -46,6 +57,9 @@ class SpanGroup extends React.Component<Props, State> {
           treeDepth={treeDepth}
           continuingTreeDepths={continuingTreeDepths}
           spanNumber={spanNumber}
+          isLast={isLast}
+          isRoot={isRoot}
+          numOfSpanChildren={numOfSpanChildren}
         />
         {this.renderSpanChildren()}
       </React.Fragment>

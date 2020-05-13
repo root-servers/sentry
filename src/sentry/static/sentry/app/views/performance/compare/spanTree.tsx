@@ -27,6 +27,7 @@ class SpanTree extends React.Component<Props> {
     treeDepth,
     continuingTreeDepths,
     isLast,
+    isRoot,
   }: {
     span: Readonly<DiffSpanType>;
     childSpans: Readonly<SpanChildrenLookupType>;
@@ -34,6 +35,7 @@ class SpanTree extends React.Component<Props> {
     treeDepth: number;
     continuingTreeDepths: Array<TreeDepthType>;
     isLast: boolean;
+    isRoot: boolean;
   }): RenderedSpanTree {
     const spanChildren: Array<DiffSpanType> = childSpans?.[getSpanID(span)] ?? [];
 
@@ -59,6 +61,7 @@ class SpanTree extends React.Component<Props> {
         const results = this.renderSpan({
           spanNumber: acc.nextSpanNumber,
           isLast: index + 1 === spanChildren.length,
+          isRoot: false,
           span: spanChild,
           childSpans,
           continuingTreeDepths: treeArr,
@@ -85,6 +88,9 @@ class SpanTree extends React.Component<Props> {
           renderedSpanChildren={reduced.renderedSpanChildren}
           treeDepth={treeDepth}
           continuingTreeDepths={continuingTreeDepths}
+          isRoot={isRoot}
+          isLast={isLast}
+          numOfSpanChildren={spanChildren.length}
         />
       </React.Fragment>
     );
@@ -115,6 +121,7 @@ class SpanTree extends React.Component<Props> {
         {rootSpans.map((rootSpan, index) => {
           const renderedRootSpan = this.renderSpan({
             isLast: index + 1 === rootSpans.length,
+            isRoot: true,
             span: rootSpan,
             childSpans,
             spanNumber: nextSpanNumber,
