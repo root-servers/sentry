@@ -3,7 +3,7 @@ import React from 'react';
 import {Event} from 'app/types';
 import {getTraceContext} from 'app/components/events/interfaces/spans/utils';
 
-import {isTransactionEvent, diffTransactions} from './utils';
+import {isTransactionEvent} from './utils';
 import SpanTree from './spanTree';
 
 type Props = {

@@ -7,6 +7,7 @@ import {ContentBox, HeaderBox} from 'app/utils/discover/styles';
 import overflowEllipsis from 'app/styles/overflowEllipsis';
 
 import TraceView from './traceView';
+import TransactionSummary from './transactionSummary';
 
 type Props = {
   baselineEvent: Event;
@@ -22,11 +23,15 @@ class TransactionComparisonContent extends React.Component<Props> {
         <HeaderBox>
           <div>breadcrumb here</div>
           <StyledTitleHeader>transaction name</StyledTitleHeader>
+          <TransactionSummary
+            baselineEvent={baselineEvent}
+            regressionEvent={regressionEvent}
+          />
         </HeaderBox>
         <ContentBox>
-          <Panel>
+          <StyledPanel>
             <TraceView baselineEvent={baselineEvent} regressionEvent={regressionEvent} />
-          </Panel>
+          </StyledPanel>
         </ContentBox>
       </React.Fragment>
     );
@@ -41,6 +46,10 @@ const StyledTitleHeader = styled('span')`
   align-self: center;
   min-height: 30px;
   ${overflowEllipsis};
+`;
+
+const StyledPanel = styled(Panel)`
+  grid-column: 1 / span 2;
 `;
 
 export default TransactionComparisonContent;
