@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import {SentryTransactionEvent} from 'app/types';
 
 import {diffTransactions, DiffSpanType, SpanChildrenLookupType, getSpanID} from './utils';
+import SpanGroup from './spanGroup';
 
 type RenderedSpanTree = {
   spanTree: JSX.Element | null;
@@ -58,7 +59,7 @@ class SpanTree extends React.Component<Props> {
         <div>
           {getSpanID(span)} - {span.comparisonResult}
         </div>
-        {reduced.renderedSpanChildren}
+        <SpanGroup renderedSpanChildren={reduced.renderedSpanChildren} />
       </React.Fragment>
     );
 
