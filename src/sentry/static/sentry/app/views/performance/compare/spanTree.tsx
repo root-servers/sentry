@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 
 import {SentryTransactionEvent} from 'app/types';
 
-import {diffTransactions, DiffSpanType} from './utils';
+import {diffTransactions, DiffSpanType, SpanChildrenLookupType, getSpanID} from './utils';
 
 type RenderedSpanTree = {
   spanTree: JSX.Element | null;
@@ -20,8 +20,47 @@ type Props = {
 };
 
 class SpanTree extends React.Component<Props> {
-  renderSpan({span}: {span: Readonly<DiffSpanType>}): RenderedSpanTree {
-    const spanTree = <div>{span.comparisonResult}</div>;
+  renderSpan({
+    span,
+    childSpans,
+  }: {
+    span: Readonly<DiffSpanType>;
+    childSpans: Readonly<SpanChildrenLookupType>;
+  }): RenderedSpanTree {
+    const spanChildren: Array<DiffSpanType> = childSpans?.[getSpanID(span)] ?? [];
+
+    type AccType = {
+      renderedSpanChildren: Array<JSX.Element>;
+    };
+
+    const reduced: AccType = spanChildren.reduce(
+      (acc: AccType, spanChild) => {
+        const key = `${getSpanID(spanChild)}`;
+
+        const results = this.renderSpan({
+          span: spanChild,
+          childSpans,
+        });
+
+        acc.renderedSpanChildren.push(
+          <React.Fragment key={key}>{results.spanTree}</React.Fragment>
+        );
+
+        return acc;
+      },
+      {
+        renderedSpanChildren: [],
+      }
+    );
+
+    const spanTree = (
+      <React.Fragment>
+        <div>
+          {getSpanID(span)} - {span.comparisonResult}
+        </div>
+        {reduced.renderedSpanChildren}
+      </React.Fragment>
+    );
 
     return {
       spanTree,
@@ -36,7 +75,7 @@ class SpanTree extends React.Component<Props> {
       regressionEvent,
     });
 
-    const {rootSpans} = comparisonReport;
+    const {rootSpans, childSpans} = comparisonReport;
 
     console.log('comparisonReport', comparisonReport);
     console.log('rootSpans', rootSpans);
@@ -44,7 +83,7 @@ class SpanTree extends React.Component<Props> {
     const spanTree = (
       <React.Fragment key="root-spans-tree">
         {rootSpans.map((rootSpan, index) => {
-          const renderedSpan = this.renderSpan({span: rootSpan});
+          const renderedSpan = this.renderSpan({span: rootSpan, childSpans});
 
           return (
             <React.Fragment key={String(index)}>{renderedSpan.spanTree}</React.Fragment>

@@ -574,3 +574,20 @@ function sortByMostTimeAdded(firstSpan: DiffSpanType, secondSpan: DiffSpanType):
     }
   }
 }
+
+export function getSpanID(diffSpan: DiffSpanType): string {
+  switch (diffSpan.comparisonResult) {
+    case 'matched': {
+      return diffSpan.span_id;
+    }
+    case 'baseline': {
+      return diffSpan.baselineSpan.span_id;
+    }
+    case 'regression': {
+      return diffSpan.regressionSpan.span_id;
+    }
+    default: {
+      throw Error('Unknown comparisonResult');
+    }
+  }
+}
