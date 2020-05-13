@@ -10,7 +10,7 @@ export function isTransactionEvent(event: any): event is SentryTransactionEvent 
   return event?.type === 'transaction';
 }
 
-type DiffSpanType =
+export type DiffSpanType =
   | {
       comparisonResult: 'matched';
       span_id: SpanId; // baselineSpan.span_id + regressionSpan.span_id

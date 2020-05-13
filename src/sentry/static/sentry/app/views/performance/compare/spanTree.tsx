@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 
 import {SentryTransactionEvent} from 'app/types';
 
-import {diffTransactions} from './utils';
+import {diffTransactions, DiffSpanType} from './utils';
 
 type RenderedSpanTree = {
   spanTree: JSX.Element | null;
@@ -20,6 +20,14 @@ type Props = {
 };
 
 class SpanTree extends React.Component<Props> {
+  renderSpan({span}: {span: Readonly<DiffSpanType>}): RenderedSpanTree {
+    const spanTree = <div>{span.comparisonResult}</div>;
+
+    return {
+      spanTree,
+    };
+  }
+
   renderRootSpans(): RenderedSpanTree {
     const {baselineEvent, regressionEvent} = this.props;
 
@@ -28,9 +36,22 @@ class SpanTree extends React.Component<Props> {
       regressionEvent,
     });
 
-    console.log('comparisonReport', comparisonReport);
+    const {rootSpans} = comparisonReport;
 
-    const spanTree = <div>root spans</div>;
+    console.log('comparisonReport', comparisonReport);
+    console.log('rootSpans', rootSpans);
+
+    const spanTree = (
+      <React.Fragment key="root-spans-tree">
+        {rootSpans.map((rootSpan, index) => {
+          const renderedSpan = this.renderSpan({span: rootSpan});
+
+          return (
+            <React.Fragment key={String(index)}>{renderedSpan.spanTree}</React.Fragment>
+          );
+        })}
+      </React.Fragment>
+    );
 
     return {
       spanTree,
