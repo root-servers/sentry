@@ -2,6 +2,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 import theme from 'app/utils/theme';
+import space from 'app/styles/space';
 import Count from 'app/components/count';
 import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
 import {SPAN_ROW_HEIGHT, SpanRow} from 'app/components/events/interfaces/spans/styles';
@@ -23,6 +24,7 @@ import {
   toPercent,
   unwrapTreeDepth,
   isOrphanTreeDepth,
+  getHumanDuration,
 } from 'app/components/events/interfaces/spans/utils';
 import * as DividerHandlerManager from 'app/components/events/interfaces/spans/dividerHandlerManager';
 
@@ -225,7 +227,7 @@ class SpanBar extends React.Component<Props, State> {
       <DividerLine
         ref={addGhostDividerLineRef()}
         style={{
-          left: toPercent(dividerPosition),
+          left: `calc(${toPercent(dividerPosition)} + 1px)`,
           display: 'none',
         }}
         onClick={event => {
@@ -243,7 +245,7 @@ class SpanBar extends React.Component<Props, State> {
         <DividerLine
           ref={addDividerLineRef()}
           style={{
-            left: toPercent(dividerPosition),
+            left: `calc(${toPercent(dividerPosition)} + 1px)`,
           }}
           onMouseEnter={() => {
             dividerHandlerChildrenProps.setHover(true);
@@ -343,6 +345,62 @@ class SpanBar extends React.Component<Props, State> {
     }
   }
 
+  renderComparisonReportLabel() {
+    const {span} = this.props;
+
+    switch (span.comparisonResult) {
+      case 'matched': {
+        const baselineDuration = getSpanDuration(span.baselineSpan);
+        const regressionDuration = getSpanDuration(span.regressionSpan);
+
+        let label: string = '';
+
+        if (baselineDuration === regressionDuration) {
+          label = 'no change';
+        }
+
+        if (baselineDuration > regressionDuration) {
+          const duration = getHumanDuration(
+            Math.abs(baselineDuration - regressionDuration)
+          );
+
+          label = `- ${duration} faster`;
+        }
+
+        if (baselineDuration < regressionDuration) {
+          const duration = getHumanDuration(
+            Math.abs(baselineDuration - regressionDuration)
+          );
+
+          label = `- ${duration} slower`;
+        }
+
+        return <ComparisonReportLabelContainer>{label}</ComparisonReportLabelContainer>;
+      }
+      case 'baseline': {
+        // TODO: need to flesh this out.
+        return (
+          <ComparisonReportLabelContainer>
+            removed from baseline
+          </ComparisonReportLabelContainer>
+        );
+      }
+      case 'regression': {
+        const regressionDuration = getSpanDuration(span.regressionSpan);
+
+        const duration = getHumanDuration(regressionDuration);
+
+        return (
+          <ComparisonReportLabelContainer>{`+ ${duration} added`}</ComparisonReportLabelContainer>
+        );
+      }
+      default: {
+        const _exhaustiveCheck: never = span;
+        return _exhaustiveCheck;
+      }
+    }
+  }
+
   renderHeader(
     dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
   ) {
@@ -364,7 +422,6 @@ class SpanBar extends React.Component<Props, State> {
         }}
       />
     ) : null;
-
     return (
       <SpanRowCellContainer>
         <SpanRowCell
@@ -378,8 +435,8 @@ class SpanBar extends React.Component<Props, State> {
         <SpanRowCell
           showStriping={spanNumber % 2 !== 0}
           style={{
-            left: toPercent(dividerPosition),
-            width: toPercent(1 - dividerPosition),
+            left: `calc(${toPercent(dividerPosition)} + 1px)`,
+            width: `calc(${toPercent(1 - dividerPosition)} - 1px)`,
           }}
         >
           <SpanBarRectangle
@@ -394,6 +451,7 @@ class SpanBar extends React.Component<Props, State> {
             }}
           />
           {foregroundSpanBar}
+          {this.renderComparisonReportLabel()}
         </SpanRowCell>
         {this.renderDivider(dividerHandlerChildrenProps)}
       </SpanRowCellContainer>
@@ -432,6 +490,19 @@ const SpanBarRectangle = styled('div')<{spanBarHatch: boolean}>`
   transition: border-color 0.15s ease-in-out;
   border-right: 1px solid rgba(0, 0, 0, 0);
   ${getHatchPattern}
+`;
+
+const ComparisonReportLabelContainer = styled('div')`
+  position: absolute;
+  height: 100%;
+  user-select: none;
+  right: ${space(1)};
+
+  line-height: 16px;
+  top: 4px;
+  height: 16px;
+
+  font-size: ${p => p.theme.fontSizeExtraSmall};
 `;
 
 export default SpanBar;
