@@ -672,3 +672,40 @@ export function isOrphanDiffSpan(diffSpan: DiffSpanType): boolean {
     }
   }
 }
+
+export type SpanGeneratedBoundsType =
+  | {
+      type: 'WIDTH_PIXEL';
+      width: 1;
+    }
+  | {
+      type: 'WIDTH_PERCENTAGE';
+      width: number;
+    };
+
+export function boundsGenerator(rootSpans: Array<DiffSpanType>) {
+  // get largest duration among the root spans.
+  // invariant: this is the largest duration among all of the spans on the transaction
+  //            comparison page.
+  const largestDuration = Math.max(
+    ...rootSpans.map(rootSpan => {
+      return getDiffSpanDuration(rootSpan);
+    })
+  );
+
+  return (span: DiffSpanType): SpanGeneratedBoundsType => {
+    const spanDuration = getDiffSpanDuration(span);
+
+    if (spanDuration <= 0) {
+      return {
+        type: 'WIDTH_PIXEL',
+        width: 1,
+      };
+    }
+
+    return {
+      type: 'WIDTH_PERCENTAGE',
+      width: spanDuration / largestDuration,
+    };
+  };
+}

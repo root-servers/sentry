@@ -16,6 +16,7 @@ import {
   SpanTreeConnector,
   SpanTreeToggler,
   DividerLine,
+  SpanBarRectangle,
 } from 'app/components/events/interfaces/spans/spanBar';
 import {
   toPercent,
@@ -30,6 +31,7 @@ import {
   getSpanOperation,
   getSpanDescription,
   isOrphanDiffSpan,
+  SpanGeneratedBoundsType,
 } from './utils';
 
 type Props = {
@@ -42,6 +44,7 @@ type Props = {
   isLast: boolean;
   showSpanTree: boolean;
   toggleSpanTree: () => void;
+  generateBounds: (span: DiffSpanType) => SpanGeneratedBoundsType;
 };
 
 type State = {
@@ -259,11 +262,36 @@ class SpanBar extends React.Component<Props, State> {
     );
   };
 
+  getBounds() {
+    const {span, generateBounds} = this.props;
+
+    const bounds = generateBounds(span);
+
+    switch (bounds.type) {
+      case 'WIDTH_PIXEL': {
+        return {
+          width: `${bounds.width}px`,
+        };
+      }
+      case 'WIDTH_PERCENTAGE': {
+        return {
+          width: toPercent(bounds.width),
+        };
+      }
+      default: {
+        const _exhaustiveCheck: never = bounds;
+        return _exhaustiveCheck;
+      }
+    }
+  }
+
   renderHeader(
     dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
   ) {
     const {dividerPosition} = dividerHandlerChildrenProps;
     const {spanNumber} = this.props;
+
+    const bounds = this.getBounds();
 
     return (
       <SpanRowCellContainer>
@@ -282,7 +310,16 @@ class SpanBar extends React.Component<Props, State> {
             width: toPercent(1 - dividerPosition),
           }}
         >
-          bar here
+          <SpanBarRectangle
+            spanBarHatch={false}
+            style={{
+              backgroundColor: 'red',
+              left: '0',
+              width: bounds.width,
+            }}
+          >
+            foo
+          </SpanBarRectangle>
         </SpanRowCell>
         {this.renderDivider(dividerHandlerChildrenProps)}
       </SpanRowCellContainer>

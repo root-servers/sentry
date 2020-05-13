@@ -5,7 +5,14 @@ import {SentryTransactionEvent} from 'app/types';
 import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
 import * as DividerHandlerManager from 'app/components/events/interfaces/spans/dividerHandlerManager';
 
-import {diffTransactions, DiffSpanType, SpanChildrenLookupType, getSpanID} from './utils';
+import {
+  diffTransactions,
+  DiffSpanType,
+  SpanChildrenLookupType,
+  getSpanID,
+  boundsGenerator,
+  SpanGeneratedBoundsType,
+} from './utils';
 import SpanGroup from './spanGroup';
 
 type RenderedSpanTree = {
@@ -31,6 +38,7 @@ class SpanTree extends React.Component<Props> {
     continuingTreeDepths,
     isLast,
     isRoot,
+    generateBounds,
   }: {
     span: Readonly<DiffSpanType>;
     childSpans: Readonly<SpanChildrenLookupType>;
@@ -39,6 +47,7 @@ class SpanTree extends React.Component<Props> {
     continuingTreeDepths: Array<TreeDepthType>;
     isLast: boolean;
     isRoot: boolean;
+    generateBounds: (span: DiffSpanType) => SpanGeneratedBoundsType;
   }): RenderedSpanTree {
     const spanChildren: Array<DiffSpanType> = childSpans?.[getSpanID(span)] ?? [];
 
@@ -69,6 +78,7 @@ class SpanTree extends React.Component<Props> {
           childSpans,
           continuingTreeDepths: treeArr,
           treeDepth: treeDepth + 1,
+          generateBounds,
         });
 
         acc.renderedSpanChildren.push(
@@ -96,6 +106,7 @@ class SpanTree extends React.Component<Props> {
           isRoot={isRoot}
           isLast={isLast}
           numOfSpanChildren={spanChildren.length}
+          generateBounds={generateBounds}
         />
       </React.Fragment>
     );
@@ -119,6 +130,8 @@ class SpanTree extends React.Component<Props> {
     console.log('comparisonReport', comparisonReport);
     console.log('rootSpans', rootSpans);
 
+    const generateBounds = boundsGenerator(rootSpans);
+
     let nextSpanNumber = 1;
 
     const spanTree = (
@@ -132,6 +145,7 @@ class SpanTree extends React.Component<Props> {
             spanNumber: nextSpanNumber,
             treeDepth: 0,
             continuingTreeDepths: [],
+            generateBounds,
           });
 
           nextSpanNumber = renderedRootSpan.nextSpanNumber;

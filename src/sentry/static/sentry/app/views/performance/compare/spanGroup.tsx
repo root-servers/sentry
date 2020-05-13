@@ -2,7 +2,7 @@ import React from 'react';
 
 import {TreeDepthType} from 'app/components/events/interfaces/spans/types';
 
-import {DiffSpanType} from './utils';
+import {DiffSpanType, SpanGeneratedBoundsType} from './utils';
 import SpanBar from './spanBar';
 
 type Props = {
@@ -14,6 +14,7 @@ type Props = {
   isLast: boolean;
   isRoot: boolean;
   numOfSpanChildren: number;
+  generateBounds: (span: DiffSpanType) => SpanGeneratedBoundsType;
 };
 
 type State = {
@@ -48,6 +49,7 @@ class SpanGroup extends React.Component<Props, State> {
       isLast,
       isRoot,
       numOfSpanChildren,
+      generateBounds,
     } = this.props;
 
     return (
@@ -62,6 +64,7 @@ class SpanGroup extends React.Component<Props, State> {
           numOfSpanChildren={numOfSpanChildren}
           showSpanTree={this.state.showSpanTree}
           toggleSpanTree={this.toggleSpanTree}
+          generateBounds={generateBounds}
         />
         {this.renderSpanChildren()}
       </React.Fragment>

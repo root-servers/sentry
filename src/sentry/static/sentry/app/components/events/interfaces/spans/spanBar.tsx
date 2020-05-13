@@ -1110,7 +1110,7 @@ const getHatchPattern = ({spanBarHatch}) => {
   return null;
 };
 
-const SpanBarRectangle = styled('div')<{spanBarHatch: boolean}>`
+export const SpanBarRectangle = styled('div')<{spanBarHatch: boolean}>`
   position: relative;
   height: 100%;
   min-width: 1px;
