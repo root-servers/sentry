@@ -295,28 +295,9 @@ function createChildPairs({
     });
   }
 
-  // sort children by start timestamp
+  // sort children by most time added
 
-  children.sort(function(firstSpan: DiffSpanType, secondSpan: DiffSpanType) {
-    // TODO: sort by most time added?
-
-    // sort spans by their start timestamp in ascending order
-
-    const firstSpanTimestamp = getDiffSpanStartTime(firstSpan);
-    const secondSpanTimestamp = getDiffSpanStartTime(secondSpan);
-
-    if (firstSpanTimestamp < secondSpanTimestamp) {
-      // sort firstSpan before secondSpan
-      return -1;
-    }
-
-    if (firstSpanTimestamp === secondSpanTimestamp) {
-      return 0;
-    }
-
-    // sort secondSpan before firstSpan
-    return 1;
-  });
+  children.sort(sortByMostTimeAdded);
 
   return {
     comparablePairs,
