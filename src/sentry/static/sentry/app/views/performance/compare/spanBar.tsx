@@ -228,7 +228,7 @@ class SpanBar extends React.Component<Props, State> {
       <DividerLine
         ref={addGhostDividerLineRef()}
         style={{
-          left: `calc(${toPercent(dividerPosition)} + 1px)`,
+          left: toPercent(dividerPosition),
           display: 'none',
         }}
         onClick={event => {
@@ -246,7 +246,7 @@ class SpanBar extends React.Component<Props, State> {
         <DividerLine
           ref={addDividerLineRef()}
           style={{
-            left: `calc(${toPercent(dividerPosition)} + 1px)`,
+            left: toPercent(dividerPosition),
           }}
           onMouseEnter={() => {
             dividerHandlerChildrenProps.setHover(true);
@@ -426,6 +426,7 @@ class SpanBar extends React.Component<Props, State> {
     return (
       <SpanRowCellContainer>
         <SpanRowCell
+          showDetail={this.state.showDetail}
           style={{
             left: 0,
             width: toPercent(dividerPosition),
@@ -434,10 +435,11 @@ class SpanBar extends React.Component<Props, State> {
           {this.renderTitle()}
         </SpanRowCell>
         <SpanRowCell
+          showDetail={this.state.showDetail}
           showStriping={spanNumber % 2 !== 0}
           style={{
-            left: `calc(${toPercent(dividerPosition)} + 1px)`,
-            width: `calc(${toPercent(1 - dividerPosition)} - 1px)`,
+            left: toPercent(dividerPosition),
+            width: toPercent(1 - dividerPosition),
           }}
         >
           <SpanBarRectangle
