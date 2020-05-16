@@ -1,9 +1,7 @@
 import React from 'react';
+import styled from '@emotion/styled';
 
-import {
-  SpanDetailContainer,
-  SpanDetails,
-} from 'app/components/events/interfaces/spans/spanDetail';
+import {SpanDetailContainer} from 'app/components/events/interfaces/spans/spanDetail';
 
 import {DiffSpanType} from './utils';
 import SpanDetailContent from './spanDetailContent';
@@ -19,10 +17,14 @@ class SpanDetail extends React.Component<Props> {
     switch (span.comparisonResult) {
       case 'matched': {
         return (
-          <SpanDetails>
-            <div>baseline</div>
-            <div>regression</div>
-          </SpanDetails>
+          <MatchedSpanDetails>
+            <MatchedSpanDetailsChild>
+              <SpanDetailContent span={span.baselineSpan} />
+            </MatchedSpanDetailsChild>
+            <MatchedSpanDetailsChild>
+              <SpanDetailContent span={span.regressionSpan} />
+            </MatchedSpanDetailsChild>
+          </MatchedSpanDetails>
         );
       }
       case 'regression': {
@@ -51,5 +53,21 @@ class SpanDetail extends React.Component<Props> {
     );
   }
 }
+
+const MatchedSpanDetails = styled('div')`
+  display: flex;
+  flex-direction: row;
+
+  & > * + * {
+    border-left: 1px solid red;
+  }
+`;
+
+const MatchedSpanDetailsChild = styled('div')`
+  width: 50%;
+  min-width: 50%;
+  max-width: 50%;
+  flex-basis: 50%;
+`;
 
 export default SpanDetail;
