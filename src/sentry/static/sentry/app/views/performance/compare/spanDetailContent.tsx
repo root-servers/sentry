@@ -24,6 +24,8 @@ class SpanDetailContent extends React.Component<Props> {
       <SpanDetails>
         <table className="table key-value">
           <tbody>
+            <Row title="Span ID">{span.span_id}</Row>
+            <Row title="Trace ID">{span.trace_id}</Row>
             <Row title="Parent Span ID">{span.parent_span_id || ''}</Row>
             <Row title="Description">{span?.description ?? ''}</Row>
             <Row title="Start Date">
