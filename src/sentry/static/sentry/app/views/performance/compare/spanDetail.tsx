@@ -2,9 +2,9 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 import space from 'app/styles/space';
+import SplitDiff from 'app/components/splitDiff';
 import {
   SpanDetailContainer,
-  SpanDetails,
   Row,
 } from 'app/components/events/interfaces/spans/spanDetail';
 import {SpanType} from 'app/components/events/interfaces/spans/types';
@@ -96,6 +96,13 @@ const MatchedSpanDetailsContent = (props: {
           <Row title="Description">{regressionSpan.description ?? ''}</Row>
         </Foo>
       </RowSplitter>
+      <div>
+        <SplitDiff
+          base={baselineSpan.description ?? ''}
+          target={regressionSpan.description ?? ''}
+          type="chars"
+        />
+      </div>
     </MatchedSpanDetails>
   );
 };
