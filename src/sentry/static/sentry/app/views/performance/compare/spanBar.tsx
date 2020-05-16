@@ -38,6 +38,7 @@ import {
   getSpanDuration,
   generateCSSWidth,
 } from './utils';
+import SpanDetail from './spanDetail';
 
 type Props = {
   span: Readonly<DiffSpanType>;
@@ -458,14 +459,34 @@ class SpanBar extends React.Component<Props, State> {
     );
   }
 
+  toggleDisplayDetail = () => {
+    this.setState(state => ({
+      showDetail: !state.showDetail,
+    }));
+  };
+
+  renderDetail() {
+    if (!this.state.showDetail) {
+      return null;
+    }
+
+    return <SpanDetail />;
+  }
+
   render() {
     return (
-      <SpanRow visible>
+      <SpanRow
+        visible
+        onClick={() => {
+          this.toggleDisplayDetail();
+        }}
+      >
         <DividerHandlerManager.Consumer>
           {(
             dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
           ) => this.renderHeader(dividerHandlerChildrenProps)}
         </DividerHandlerManager.Consumer>
+        {this.renderDetail()}
       </SpanRow>
     );
   }
