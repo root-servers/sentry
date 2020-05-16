@@ -470,7 +470,7 @@ class SpanBar extends React.Component<Props, State> {
       return null;
     }
 
-    return <SpanDetail />;
+    return <SpanDetail span={this.props.span} />;
   }
 
   render() {
