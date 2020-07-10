@@ -41,7 +41,11 @@ class AmqpBackend(object):
         )
 
     def get_conn(self):
-        from librabbitmq import Connection
+        try:
+            # TODO: Remove this once we've totally moved away from `librabbitmq`
+            from librabbitmq import Connection
+        except Exception:
+            from amqp import Connection
 
         return Connection(**self.conn_info)
 
