@@ -43,7 +43,7 @@ class TransactionComparisonContent extends React.Component<Props> {
 // TODO: move to styles.tsx
 const StyledTitleHeader = styled('span')`
   font-size: ${p => p.theme.headerFontSize};
-  color: ${p => p.theme.gray4};
+  color: ${p => p.theme.gray400};
   grid-column: 1/2;
   align-self: center;
   min-height: 30px;
