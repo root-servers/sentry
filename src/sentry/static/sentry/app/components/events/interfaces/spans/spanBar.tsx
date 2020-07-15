@@ -172,7 +172,7 @@ const getDurationDisplay = ({
   return 'inset';
 };
 
-const getBackgroundColor = ({
+export const getBackgroundColor = ({
   showStriping,
   showDetail,
   theme,

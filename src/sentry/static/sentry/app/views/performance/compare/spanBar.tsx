@@ -490,12 +490,7 @@ class SpanBar extends React.Component<Props, State> {
 
   render() {
     return (
-      <SpanRow
-        visible
-        onClick={() => {
-          this.toggleDisplayDetail();
-        }}
-      >
+      <SpanRow visible>
         <DividerHandlerManager.Consumer>
           {(
             dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
