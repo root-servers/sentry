@@ -258,6 +258,15 @@ class SpanBar extends React.Component<Props, State> {
 
     const bounds = generateBounds(span);
 
+    function normalizePadding(width: string | undefined): string | undefined {
+      if (!width) {
+        return undefined;
+      }
+
+      // there is a "padding" of 1px on either side of the span rectangle
+      return `max(1px, calc(${width} - 2px))`;
+    }
+
     switch (span.comparisonResult) {
       case 'matched': {
         const baselineDuration = getSpanDuration(span.baselineSpan);
@@ -267,7 +276,7 @@ class SpanBar extends React.Component<Props, State> {
           return {
             background: {
               color: undefined,
-              width: generateCSSWidth(bounds.background),
+              width: normalizePadding(generateCSSWidth(bounds.background)),
               hatch: true,
             },
             foreground: undefined,
@@ -279,12 +288,12 @@ class SpanBar extends React.Component<Props, State> {
             background: {
               // baseline
               color: 'red',
-              width: generateCSSWidth(bounds.background),
+              width: normalizePadding(generateCSSWidth(bounds.background)),
             },
             foreground: {
               // regression
               color: undefined,
-              width: generateCSSWidth(bounds.foreground),
+              width: normalizePadding(generateCSSWidth(bounds.foreground)),
               hatch: true,
             },
           };
@@ -296,12 +305,12 @@ class SpanBar extends React.Component<Props, State> {
           background: {
             // regression
             color: theme.purple300,
-            width: generateCSSWidth(bounds.background),
+            width: normalizePadding(generateCSSWidth(bounds.background)),
           },
           foreground: {
             // baseline
             color: undefined,
-            width: generateCSSWidth(bounds.foreground),
+            width: normalizePadding(generateCSSWidth(bounds.foreground)),
             hatch: true,
           },
         };
@@ -310,7 +319,7 @@ class SpanBar extends React.Component<Props, State> {
         return {
           background: {
             color: theme.purple300,
-            width: generateCSSWidth(bounds.background),
+            width: normalizePadding(generateCSSWidth(bounds.background)),
           },
           foreground: undefined,
         };
@@ -319,7 +328,7 @@ class SpanBar extends React.Component<Props, State> {
         return {
           background: {
             color: 'red',
-            width: generateCSSWidth(bounds.background),
+            width: normalizePadding(generateCSSWidth(bounds.background)),
           },
           foreground: undefined,
         };
@@ -396,11 +405,11 @@ class SpanBar extends React.Component<Props, State> {
     const spanBarStyles = this.getSpanBarStyles();
 
     const foregroundSpanBar = spanBarStyles.foreground ? (
-      <SpanBarRectangle
+      <ComparisonSpanBarRectangle
         spanBarHatch={spanBarStyles.foreground.hatch ?? false}
         style={{
           backgroundColor: spanBarStyles.foreground.color,
-          left: '0',
+          left: '1px',
           width: spanBarStyles.foreground.width,
           position: 'absolute',
           top: '4px',
@@ -434,11 +443,11 @@ class SpanBar extends React.Component<Props, State> {
             this.toggleDisplayDetail();
           }}
         >
-          <SpanBarRectangle
+          <ComparisonSpanBarRectangle
             spanBarHatch={spanBarStyles.background.hatch ?? false}
             style={{
               backgroundColor: spanBarStyles.background.color,
-              left: '0',
+              left: '1px',
               width: spanBarStyles.background.width,
               position: 'absolute',
               top: '4px',
@@ -513,14 +522,14 @@ const getHatchPattern = ({spanBarHatch}) => {
   return null;
 };
 
-const SpanBarRectangle = styled('div')<{spanBarHatch: boolean}>`
+const ComparisonSpanBarRectangle = styled('div')`
   position: relative;
   height: 100%;
   min-width: 1px;
   user-select: none;
   transition: border-color 0.15s ease-in-out;
   border-right: 1px solid rgba(0, 0, 0, 0);
-  ${getHatchPattern}
+  ${getHatchPattern};
 `;
 
 const ComparisonReportLabelContainer = styled('div')`
