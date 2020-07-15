@@ -405,7 +405,7 @@ class SpanBar extends React.Component<Props, State> {
   renderHeader(
     dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
   ) {
-    const {dividerPosition} = dividerHandlerChildrenProps;
+    const {dividerPosition, addGhostDividerLineRef} = dividerHandlerChildrenProps;
     const {spanNumber} = this.props;
 
     const spanBarStyles = this.getSpanBarStyles();
