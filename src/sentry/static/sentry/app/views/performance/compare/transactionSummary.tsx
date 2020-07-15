@@ -41,7 +41,7 @@ const EventRow = styled('div')`
 `;
 
 const Baseline = styled('div')`
-  background-color: ${p => p.theme.purpleLightest};
+  background-color: ${p => p.theme.purple300};
   height: 40px;
   width: 4px;
 

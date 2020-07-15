@@ -310,7 +310,7 @@ class SpanBar extends React.Component<Props, State> {
         return {
           background: {
             // regression
-            color: theme.purpleLightest,
+            color: theme.purple300,
             width: generateCSSWidth(bounds.background),
           },
           foreground: {
@@ -324,7 +324,7 @@ class SpanBar extends React.Component<Props, State> {
       case 'regression': {
         return {
           background: {
-            color: theme.purpleLightest,
+            color: theme.purple300,
             width: generateCSSWidth(bounds.background),
           },
           foreground: undefined,
