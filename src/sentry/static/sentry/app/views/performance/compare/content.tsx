@@ -3,8 +3,8 @@ import styled from '@emotion/styled';
 
 import {Event} from 'app/types';
 import {Panel} from 'app/components/panels';
-import {ContentBox, HeaderBox} from 'app/utils/discover/styles';
 import overflowEllipsis from 'app/styles/overflowEllipsis';
+import * as Layout from 'app/components/layouts/thirds';
 
 import TraceView from './traceView';
 import TransactionSummary from './transactionSummary';
@@ -20,19 +20,21 @@ class TransactionComparisonContent extends React.Component<Props> {
 
     return (
       <React.Fragment>
-        <HeaderBox>
-          <div>breadcrumb here</div>
-          <StyledTitleHeader>transaction name</StyledTitleHeader>
-          <TransactionSummary
-            baselineEvent={baselineEvent}
-            regressionEvent={regressionEvent}
-          />
-        </HeaderBox>
-        <ContentBox>
+        <Layout.Header>
+          <Layout.HeaderContent>
+            <div>breadcrumb here</div>
+            <StyledTitleHeader>transaction name</StyledTitleHeader>
+            <TransactionSummary
+              baselineEvent={baselineEvent}
+              regressionEvent={regressionEvent}
+            />
+          </Layout.HeaderContent>
+        </Layout.Header>
+        <Layout.Body>
           <StyledPanel>
             <TraceView baselineEvent={baselineEvent} regressionEvent={regressionEvent} />
           </StyledPanel>
-        </ContentBox>
+        </Layout.Body>
       </React.Fragment>
     );
   }
