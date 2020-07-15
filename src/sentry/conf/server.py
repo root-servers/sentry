@@ -1926,3 +1926,6 @@ SENTRY_REQUEST_METRIC_ALLOWED_PATHS = (
     "sentry.incidents.endpoints",
 )
 SENTRY_MAIL_ADAPTER_BACKEND = "sentry.mail.adapter.MailAdapter"
+
+# Project id for which we emit special timing metrics
+SENTRY_INTERNAL_METRICS_PROJECT_ID = None

@@ -771,6 +771,35 @@ def _do_save_event(
                     "events.time-to-process", time() - start_time, instance=data["platform"]
                 )
 
+            time_internal_metrics_event(data, project_id, start_time)
+
+
+def time_internal_metrics_event(data, project_id, start_time):
+    if (
+        settings.SENTRY_INTERNAL_METRICS_PROJECT_ID is None
+        or project_id != settings.SENTRY_INTERNAL_METRICS_PROJECT_ID
+    ):
+        return
+
+    internals = data["extra"].get("_sentry_internal_metrics")
+    if not internals:
+        return
+
+    metrics.timing(
+        "events.internal-time-to-ingest-total",
+        time() - data["timestamp"],
+        instance=internals["source"],
+        sample_rate=1.0,
+    )
+
+    if start_time:
+        metrics.timing(
+            "events.internal-time-to-process",
+            time() - start_time,
+            instance=internals["source"],
+            sample_rate=1.0,
+        )
+
 
 @instrumented_task(
     name="sentry.tasks.store.save_event",
