@@ -20,6 +20,7 @@ import {
   SpanTreeToggler,
   DividerLine,
   DividerLineGhostContainer,
+  getBackgroundColor,
 } from 'app/components/events/interfaces/spans/spanBar';
 import {
   toPercent,
@@ -211,60 +212,44 @@ class SpanBar extends React.Component<Props, State> {
     dividerHandlerChildrenProps: DividerHandlerManager.DividerHandlerManagerChildrenProps
   ) => {
     if (this.state.showDetail) {
-      // we would like to hide the divider lines when the span details
-      // has been expanded
-      return null;
+      // Mock component to preserve layout spacing
+      return (
+        <DividerLine
+          style={{
+            position: 'relative',
+            backgroundColor: getBackgroundColor({
+              theme,
+              showDetail: true,
+            }),
+          }}
+        />
+      );
     }
 
-    const {
-      dividerPosition,
-      addDividerLineRef,
-      addGhostDividerLineRef,
-    } = dividerHandlerChildrenProps;
+    const {addDividerLineRef} = dividerHandlerChildrenProps;
 
-    // We display the ghost divider line for whenever the divider line is being dragged.
-    // The ghost divider line indicates the original position of the divider line
-    const ghostDivider = (
+    return (
       <DividerLine
-        ref={addGhostDividerLineRef()}
+        ref={addDividerLineRef()}
         style={{
-          left: toPercent(dividerPosition),
-          display: 'none',
+          position: 'relative',
         }}
+        onMouseEnter={() => {
+          dividerHandlerChildrenProps.setHover(true);
+        }}
+        onMouseLeave={() => {
+          dividerHandlerChildrenProps.setHover(false);
+        }}
+        onMouseOver={() => {
+          dividerHandlerChildrenProps.setHover(true);
+        }}
+        onMouseDown={dividerHandlerChildrenProps.onDragStart}
         onClick={event => {
-          // the ghost divider line should not be interactive.
           // we prevent the propagation of the clicks from this component to prevent
           // the span detail from being opened.
           event.stopPropagation();
         }}
       />
-    );
-
-    return (
-      <React.Fragment>
-        {ghostDivider}
-        <DividerLine
-          ref={addDividerLineRef()}
-          style={{
-            left: toPercent(dividerPosition),
-          }}
-          onMouseEnter={() => {
-            dividerHandlerChildrenProps.setHover(true);
-          }}
-          onMouseLeave={() => {
-            dividerHandlerChildrenProps.setHover(false);
-          }}
-          onMouseOver={() => {
-            dividerHandlerChildrenProps.setHover(true);
-          }}
-          onMouseDown={dividerHandlerChildrenProps.onDragStart}
-          onClick={event => {
-            // we prevent the propagation of the clicks from this component to prevent
-            // the span detail from being opened.
-            event.stopPropagation();
-          }}
-        />
-      </React.Fragment>
     );
   };
 
@@ -424,13 +409,15 @@ class SpanBar extends React.Component<Props, State> {
       />
     ) : null;
     return (
-      <SpanRowCellContainer>
+      <SpanRowCellContainer showDetail={this.state.showDetail}>
         <SpanRowCell
           data-type="span-row-cell"
           showDetail={this.state.showDetail}
           style={{
-            left: 0,
-            width: toPercent(dividerPosition),
+            width: `calc(${toPercent(dividerPosition)} - 0.5px)`,
+          }}
+          onClick={() => {
+            this.toggleDisplayDetail();
           }}
         >
           {this.renderTitle()}
@@ -441,8 +428,10 @@ class SpanBar extends React.Component<Props, State> {
           showDetail={this.state.showDetail}
           showStriping={spanNumber % 2 !== 0}
           style={{
-            left: toPercent(dividerPosition),
-            width: toPercent(1 - dividerPosition),
+            width: `calc(${toPercent(1 - dividerPosition)} - 0.5px)`,
+          }}
+          onClick={() => {
+            this.toggleDisplayDetail();
           }}
         >
           <SpanBarRectangle
