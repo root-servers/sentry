@@ -924,7 +924,7 @@ const DividerLine = styled('div')`
   }
 `;
 
-const DividerLineGhostContainer = styled('div')`
+export const DividerLineGhostContainer = styled('div')`
   position: absolute;
   width: 100%;
   height: 100%;

@@ -13,12 +13,13 @@ import {
   SpanBarTitleContainer,
   SpanBarTitle,
   OperationName,
-  Chevron,
+  StyledIconChevron,
   SpanTreeTogglerContainer,
   ConnectorBar,
   SpanTreeConnector,
   SpanTreeToggler,
   DividerLine,
+  DividerLineGhostContainer,
 } from 'app/components/events/interfaces/spans/spanBar';
 import {
   toPercent,
@@ -136,10 +137,9 @@ class SpanBar extends React.Component<Props, State> {
   };
 
   renderSpanTreeToggler = ({left}: {left: number}) => {
-    const {numOfSpanChildren, isRoot} = this.props;
+    const {numOfSpanChildren, isRoot, showSpanTree} = this.props;
 
-    const chevronSrc = this.props.showSpanTree ? 'icon-chevron-up' : 'icon-chevron-down';
-    const chevron = <Chevron src={chevronSrc} />;
+    const chevron = <StyledIconChevron direction={showSpanTree ? 'up' : 'down'} />;
 
     if (numOfSpanChildren <= 0) {
       return (
@@ -426,6 +426,7 @@ class SpanBar extends React.Component<Props, State> {
     return (
       <SpanRowCellContainer>
         <SpanRowCell
+          data-type="span-row-cell"
           showDetail={this.state.showDetail}
           style={{
             left: 0,
@@ -434,7 +435,9 @@ class SpanBar extends React.Component<Props, State> {
         >
           {this.renderTitle()}
         </SpanRowCell>
+        {this.renderDivider(dividerHandlerChildrenProps)}
         <SpanRowCell
+          data-type="span-row-cell"
           showDetail={this.state.showDetail}
           showStriping={spanNumber % 2 !== 0}
           style={{
@@ -456,7 +459,28 @@ class SpanBar extends React.Component<Props, State> {
           {foregroundSpanBar}
           {this.renderComparisonReportLabel()}
         </SpanRowCell>
-        {this.renderDivider(dividerHandlerChildrenProps)}
+        {!this.state.showDetail && (
+          <DividerLineGhostContainer
+            style={{
+              width: `calc(${toPercent(dividerPosition)} + 0.5px)`,
+              display: 'none',
+            }}
+          >
+            <DividerLine
+              ref={addGhostDividerLineRef()}
+              style={{
+                right: 0,
+              }}
+              className="hovering"
+              onClick={event => {
+                // the ghost divider line should not be interactive.
+                // we prevent the propagation of the clicks from this component to prevent
+                // the span detail from being opened.
+                event.stopPropagation();
+              }}
+            />
+          </DividerLineGhostContainer>
+        )}
       </SpanRowCellContainer>
     );
   }
