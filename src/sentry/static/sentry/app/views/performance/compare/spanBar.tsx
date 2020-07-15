@@ -71,6 +71,7 @@ class SpanBar extends React.Component<Props, State> {
       treeDepth: spanTreeDepth,
       continuingTreeDepths,
       span,
+      showSpanTree,
     } = this.props;
 
     const spanID = getSpanID(span);
@@ -109,7 +110,7 @@ class SpanBar extends React.Component<Props, State> {
       );
     });
 
-    if (hasToggler) {
+    if (hasToggler && showSpanTree) {
       // if there is a toggle button, we add a connector bar to create an attachment
       // between the toggle button and any connector bars below the toggle button
       connectorBars.push(
