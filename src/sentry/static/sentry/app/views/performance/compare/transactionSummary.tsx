@@ -49,7 +49,7 @@ const Baseline = styled('div')`
 `;
 
 const Regression = styled('div')`
-  background-color: ${p => p.theme.gray5};
+  background-color: ${p => 'red'};
   height: 40px;
   width: 4px;
 

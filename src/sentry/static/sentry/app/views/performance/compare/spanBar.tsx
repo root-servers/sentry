@@ -293,7 +293,7 @@ class SpanBar extends React.Component<Props, State> {
           return {
             background: {
               // baseline
-              color: theme.gray5,
+              color: 'red',
               width: generateCSSWidth(bounds.background),
             },
             foreground: {
@@ -333,7 +333,7 @@ class SpanBar extends React.Component<Props, State> {
       case 'baseline': {
         return {
           background: {
-            color: theme.gray5,
+            color: 'red',
             width: generateCSSWidth(bounds.background),
           },
           foreground: undefined,
