@@ -34,6 +34,7 @@ const GridCell = styled('div')<{
   hasError?: boolean;
   isLastItem?: boolean;
 }>`
+  height: 100%;
   position: relative;
   border-bottom: 1px solid ${p => p.theme.borderLight};
   margin-bottom: -1px;
